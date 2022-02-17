@@ -123,7 +123,9 @@ if __name__ == '__main__':
     print('Cyclic redundancy check (CRC) reverse engneering tool.\n')
     print('----------------------------------------\n')
     print('\n')
-    crc_algorithm_name  = 'crc64-ecma' #crc64-ecma
+    print('Choose one of the following choices and write its name below:')
+    print(list(crcengine.algorithms_available()))
+    crc_algorithm_name = input('Write the name of the CRC code you want to reverse. \n\n')
     crc_algorithm = crcengine.new(crc_algorithm_name)
     params = print_crc_parameters(crc_algorithm_name)
     estimated_poly_normal,estimated_poly_reverse = guess_poly(crc_algorithm)
