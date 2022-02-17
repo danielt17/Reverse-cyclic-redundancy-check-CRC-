@@ -10,6 +10,7 @@ Created on Thu Feb 17 17:51:57 2022
 
 import crcengine 
 import numpy as np
+from time import sleep
 
 # %% Functions
 
@@ -43,6 +44,7 @@ def print_crc_parameters(crc_algorithm_name):
         else:
             print(str(param[0]) + ': ' + str(param[1]) + '.')
     print('\n')
+    sleep(5)
     return params
 
 def calculate_and_print_result(input_string,crc_algorithm,enb_text=False):
