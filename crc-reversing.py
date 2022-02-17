@@ -20,6 +20,14 @@ def reverse_poly(string_poly,order):
     len_string = order - len(bin(string_poly)[2:])
     return int(bin(string_poly)[::-1][:-2],2) << len_string
 
+def recipolar_poly(string_poly,order):
+    # recipolar_poly p(x) -> p(x^(-1))*x^n
+    temp = bin(string_poly)[::-1][:-2][1:]
+    temp = temp  + '0'*(order-len(temp)-1) + '1'
+    return int(temp,2)
+
+def reverse_recipolar_poly(string_poly,order):
+    return reverse_poly(recipolar_poly(string_poly,order),order)
 
 def byte_xor(ba1, ba2):
     # This function calculates the xor between two bytearrays
@@ -74,10 +82,10 @@ def full_process_to_poly(str1,str2,str3,str4,crc_algorithm):
 
 def guess_poly(crc_algorithm):
     print('Trying different input bytearray combinations in order to estimate the CRC polynomial using a differential method.\n')
-    str1 = bytearray([0,0,0,10]);   str2 = bytearray([0,0,0,8]);  # 2
-    str3 = bytearray([0,0,0,8]);    str4 = bytearray([0,0,0,12]); # 4
-    str5 = bytearray([0,0,0,12]);   str6 = bytearray([0,0,0,4]);  # 8
-    str7 = bytearray([0,0,0,24]);   str8 = bytearray([0,0,0,8]);  # 16
+    str1 = bytearray([0,0,0,0,0,0,0,10]);   str2 = bytearray([0,0,0,0,0,0,0,8]);  # 2
+    str3 = bytearray([0,0,0,0,0,0,0,8]);    str4 = bytearray([0,0,0,0,0,0,0,12]); # 4
+    str5 = bytearray([0,0,0,0,0,0,0,12]);   str6 = bytearray([0,0,0,0,0,0,0,4]);  # 8
+    str7 = bytearray([0,0,0,0,0,0,0,24]);   str8 = bytearray([0,0,0,0,0,0,0,8]);  # 16
     strs = [str1, str2, str3, str4, str5, str6, str7, str8];
     amount_of_quads = len(strs)//2 - 1
     polys = []
@@ -90,10 +98,14 @@ def guess_poly(crc_algorithm):
     print('MSB path:\n')
     for i in range(amount_of_quads):
         poly = full_process_to_poly(strs[2*i],strs[2*i+1],strs[2*i+2],strs[2*i+3],crc_algorithm)
+        if poly == 0:
+            continue
         polys.append(poly)
+    polys = np.asarray(polys,np.uint64)
+    polys = polys[polys != 0]
     values, counts = np.unique(polys, return_counts=True)
     ind = np.argmax(counts)
-    estimated_poly_reverse = values[ind]
+    estimated_poly_reverse = int(values[ind])
     estimated_poly_normal = reverse_poly(estimated_poly_reverse,len(bin(estimated_poly_reverse)[2:]))
     print('\n')
     print('----------------------------------------\n')
@@ -111,9 +123,9 @@ if __name__ == '__main__':
     print('Cyclic redundancy check (CRC) reverse engneering tool.\n')
     print('----------------------------------------\n')
     print('\n')
-    crc_algorithm_name  = 'crc32'
+    crc_algorithm_name  = 'crc64-ecma' #crc64-ecma
     crc_algorithm = crcengine.new(crc_algorithm_name)
     params = print_crc_parameters(crc_algorithm_name)
     estimated_poly_normal,estimated_poly_reverse = guess_poly(crc_algorithm)
     poly_known_order = params['width']
-    print('The normal\\reversed polynomial representations of ' + params['name'] + ' as defined in wikipedia: ' + hex(params['poly']) + '\\' + hex(reverse_poly(params['poly'],poly_known_order)) + '.\n')
+    print('The normal\\reversed\\recipolar\\revered recipolar polynomial representations of ' + params['name'] + ' as defined in CRC-engine (taken from wikipedia): ' + hex(params['poly']) + '\\' + hex(reverse_poly(params['poly'],poly_known_order))  + '\\' + hex(recipolar_poly(params['poly'],poly_known_order)) + '\\' + hex(reverse_recipolar_poly(params['poly'],poly_known_order)) + '.\n')
