@@ -127,6 +127,40 @@ def guess_poly(crc_algorithm):
     print('----------------------------------------\n')
     return estimated_poly_normal,estimated_poly_reverse,estimated_poly_recipolar,estimated_poly_recipolar_reverese,estimated_poly_deg
 
+def create_powers_of_2(estimated_poly_deg):
+    ls = []
+    for i in range(estimated_poly_deg):
+        cur_val = bytearray(long_to_bytes(1<<i,estimated_poly_deg//8)) # creates powers of 2 from 1 to 2^(estimated_poly_deg-1)
+        ls.append(cur_val)
+    return ls
+
+def create_T(ls,estimated_poly_deg,crc_algorithm):
+    ls_binary_differntial = []
+    for i in range(estimated_poly_deg):
+        cur_bin = bin(differential_message(ls[(i) % estimated_poly_deg],ls[(i+1) % estimated_poly_deg],crc_algorithm,False))[2:]
+        cur_bin = (estimated_poly_deg-len(cur_bin))*'0' + cur_bin
+        ls_binary_differntial.append(cur_bin)
+    T = np.zeros((estimated_poly_deg,estimated_poly_deg),np.uint64)
+    for i in range(estimated_poly_deg):
+        for j in range(estimated_poly_deg):
+            T[j,i] = int(ls_binary_differntial[i][j]) # elements of binary string string must be columns
+    return T
+    
+def binary_string_to_vector(bin_string,estimated_poly_deg):
+    bin_string = (estimated_poly_deg-len(bin_string))*'0' + bin_string
+    K = np.zeros((estimated_poly_deg,1),np.uint64)
+    for i in range(estimated_poly_deg):
+        K[i] = int(bin_string[i])
+    return K
+
+def create_K(ls,estimated_poly_deg,crc_algorithm):
+    intital_bin1 = ls[-2]
+    intital_bin2 = ls[-1]
+    bin_string = bin(differential_message(intital_bin1,intital_bin2,crc_algorithm) ^ calculate_and_print_result(byte_xor(intital_bin1,intital_bin2),crc_algorithm))[2:]
+    K = binary_string_to_vector(bin_string,estimated_poly_deg)
+    return K
+    
+
 def create_T_matrix(T,estimated_poly_deg):
     f = Field.PrimeField(2)
     T_mat = Field.Matrix(estimated_poly_deg, estimated_poly_deg, f)
@@ -227,26 +261,9 @@ def estimate_xorin(crc_algorithm,estimated_poly_deg):
     print('\n')
     print('Estimating xor in value of crc code:')
     print('Creating a basis of independet componenets, each byte array has value 2^i, where i = 0 to n - 1 (n = polynomial degree)\n')
-    ls = []
-    for i in range(estimated_poly_deg):
-        cur_val = bytearray(long_to_bytes(1<<i,estimated_poly_deg//8)) # creates powers of 2 from 1 to 2^(estimated_poly_deg-1)
-        ls.append(cur_val)
-    ls_binary_differntial = []
-    for i in range(estimated_poly_deg):
-        cur_bin = bin(differential_message(ls[(i) % estimated_poly_deg],ls[(i+1) % estimated_poly_deg],crc_algorithm,False))[2:]
-        cur_bin = (estimated_poly_deg-len(cur_bin))*'0' + cur_bin
-        ls_binary_differntial.append(cur_bin)
-    T = np.zeros((estimated_poly_deg,estimated_poly_deg),np.uint64)
-    for i in range(estimated_poly_deg):
-        for j in range(estimated_poly_deg):
-            T[j,i] = int(ls_binary_differntial[i][j]) # elements of binary string string must be columns
-    intital_bin1 = ls[-2]
-    intital_bin2 = ls[-1]
-    bin_string = bin(differential_message(intital_bin1,intital_bin2,crc_algorithm) ^ calculate_and_print_result(byte_xor(intital_bin1,intital_bin2),crc_algorithm))[2:]
-    bin_string = (estimated_poly_deg-len(bin_string))*'0' + bin_string
-    K = np.zeros((estimated_poly_deg,1),np.uint64)
-    for i in range(estimated_poly_deg):
-        K[i] = int(bin_string[i])
+    ls = create_powers_of_2(estimated_poly_deg)
+    T = create_T(ls,estimated_poly_deg,crc_algorithm)
+    K = create_K(ls,estimated_poly_deg,crc_algorithm)
     Solutions_binary,Solutions_int,Solutions_hex = solve_system_of_equations_over_gf2(T,K,estimated_poly_deg)
     print('Found possible solutions: \n')
     print('Binary form: ' + str(Solutions_binary))
