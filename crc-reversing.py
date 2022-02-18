@@ -183,6 +183,10 @@ def estimate_xorin(crc_algorithm,estimated_poly_deg):
     for i in range(estimated_poly_deg):
         for j in range(estimated_poly_deg):
             T_mat.set(i, j, int(T[i,j]))
+    print('Initial T matrix: \n')
+    for i in range(T_mat.row_count()): print(" ".join(str(T_mat.get(i, j)) for j in range(T_mat.column_count())))
+    print('Initial K vector: \n')
+    print(K)
     REF_recipe_ls,RREF_recipe_ls = T_mat.reduced_row_echelon_form()
     print('The reduced T matrix: \n')
     for i in range(T_mat.row_count()): print(" ".join(str(T_mat.get(i, j)) for j in range(T_mat.column_count())))
