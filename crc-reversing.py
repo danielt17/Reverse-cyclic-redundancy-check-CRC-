@@ -165,14 +165,16 @@ def estimate_xorin(crc_algorithm,estimated_poly_deg):
         ls.append(cur_val)
     ls_binary_differntial = []
     for i in range(estimated_poly_deg):
-        cur_bin = bin(differential_message(ls[(0) % estimated_poly_deg],ls[(i+1) % estimated_poly_deg],crc_algorithm,False))[2:]
+        cur_bin = bin(differential_message(ls[(i) % estimated_poly_deg],ls[(i+1) % estimated_poly_deg],crc_algorithm,False))[2:]
         cur_bin = (estimated_poly_deg-len(cur_bin))*'0' + cur_bin
         ls_binary_differntial.append(cur_bin)
     T = np.zeros((estimated_poly_deg,estimated_poly_deg),np.uint64)
     for i in range(estimated_poly_deg):
         for j in range(estimated_poly_deg):
             T[j,i] = int(ls_binary_differntial[i][j]) # elements of binary string string must be columns
-    bin_string = bin(differential_message(ls[0],ls[1],crc_algorithm) ^ calculate_and_print_result(byte_xor(ls[0],ls[1]),crc_algorithm))[2:]
+    intital_bin1 = ls[-2]
+    intital_bin2 = ls[-1]
+    bin_string = bin(differential_message(intital_bin1,intital_bin2,crc_algorithm) ^ calculate_and_print_result(byte_xor(intital_bin1,intital_bin2),crc_algorithm))[2:]
     bin_string = (estimated_poly_deg-len(bin_string))*'0' + bin_string
     K = np.zeros((estimated_poly_deg,1),np.uint64)
     for i in range(estimated_poly_deg):
@@ -231,7 +233,7 @@ def estimate_xorin(crc_algorithm,estimated_poly_deg):
     print('Binary form: ' + str(Solutions_binary))
     print('Intger form: ' + str(Solutions_int))
     print('Hex form: ' + str(Solutions_hex))
-    return Solutions_int
+    return Solutions_binary,Solutions_int,Solutions_hex
     
 def print_actual_crc_parameters(params):
     # Pritnting actual CRC parameters
@@ -269,6 +271,6 @@ if __name__ == '__main__':
     params = print_crc_parameters(crc_algorithm_name)
     estimated_poly_normal,estimated_poly_reverse,estimated_poly_recipolar,estimated_poly_recipolar_reverese,estimated_poly_deg = guess_poly(crc_algorithm)
     print_actual_crc_parameters(params)
-    Solutions = estimate_xorin(crc_algorithm,estimated_poly_deg)
+    xorin_binary,xorin_int,xorin_hex = estimate_xorin(crc_algorithm,estimated_poly_deg)
     
     
