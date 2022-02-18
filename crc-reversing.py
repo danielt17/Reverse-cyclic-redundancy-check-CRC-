@@ -127,12 +127,26 @@ def guess_poly(crc_algorithm):
     print('----------------------------------------\n')
     return estimated_poly_normal,estimated_poly_reverse,estimated_poly_recipolar,estimated_poly_recipolar_reverese,estimated_poly_deg
 
-def preform_vector_gauss_jordan(K,REF_recipe_ls,RREF_recipe_ls):
+def create_T_matrix(T,estimated_poly_deg):
+    f = Field.PrimeField(2)
+    T_mat = Field.Matrix(estimated_poly_deg, estimated_poly_deg, f)
+    for i in range(estimated_poly_deg):
+        for j in range(estimated_poly_deg):
+            T_mat.set(i, j, int(T[i,j]))
+    return T_mat
+
+def create_K_matrix(K):
     f = Field.PrimeField(2)
     K_mat = Field.Matrix(K.shape[0], K.shape[1], f)
-    rows = K.shape[0]
     for i in range(K.shape[0]):
         K_mat.set(i, 0, int(K[i]))
+    return K_mat
+
+def print_matrix_gf(mat):
+    for i in range(mat.row_count()): print(" ".join(str(mat.get(i, j)) for j in range(mat.column_count())))
+
+def preform_vector_gauss_jordan(K_mat,REF_recipe_ls,RREF_recipe_ls):
+    rows = K_mat.row_count()
     for ind in range(len(REF_recipe_ls)):
         numpivots = REF_recipe_ls[ind][1]
         pivotrow = REF_recipe_ls[ind][2]
@@ -155,35 +169,14 @@ def preform_vector_gauss_jordan(K,REF_recipe_ls,RREF_recipe_ls):
             counter = counter + 1
     return K_mat
 
-def solve_system_of_equations_over_gf2(T,K):
-    # Solves system of equation A*x=b over GF(2)
-    print('We want to find I such that: T*I=K over GF(2)\n')
-    f = Field.PrimeField(2)
-    T_mat = Field.Matrix(estimated_poly_deg, estimated_poly_deg, f)
-    for i in range(estimated_poly_deg):
-        for j in range(estimated_poly_deg):
-            T_mat.set(i, j, int(T[i,j]))
-    print('Initial T matrix: \n')
-    for i in range(T_mat.row_count()): print(" ".join(str(T_mat.get(i, j)) for j in range(T_mat.column_count())))
-    print('\n')
-    print('Initial K vector: \n')
-    print(K)
-    print('\n')
-    REF_recipe_ls,RREF_recipe_ls = T_mat.reduced_row_echelon_form()
-    print('The reduced T matrix: \n')
-    for i in range(T_mat.row_count()): print(" ".join(str(T_mat.get(i, j)) for j in range(T_mat.column_count())))
-    K_mat = preform_vector_gauss_jordan(K,REF_recipe_ls,RREF_recipe_ls)
-    print('\n')
-    print('The reduced K vector: \n')
-    for i in range(K_mat.row_count()): print(" ".join(str(K_mat.get(i, j)) for j in range(K_mat.column_count())))
-    print('\n')
-    T = np.array(T_mat.values)
-    K = np.array(K_mat.values)
+def find_zero_rows_and_check_if_soultion_exist(T,K):
     zero_rows = np.where(~T.any(axis=1))[0]
     for zero_row in zero_rows:
         if K[zero_rows] != 0:
             raise Exception('Equation is unsolvable!')
-    amount_of_zero_rows = len(zero_rows)
+    return zero_rows,len(zero_rows)
+
+def create_T_and_K_to_find_all_solutions(T,K,zero_rows,amount_of_zero_rows):
     for zero_row in zero_rows:
         T[zero_row,zero_row] = 1
     Ks = []
@@ -195,18 +188,39 @@ def solve_system_of_equations_over_gf2(T,K):
             K_new[row] = int(seq[counter])
             counter = counter + 1
         Ks.append(K_new)
-    Solutions_binary = []
-    Solutions_int = []
-    Solutions_hex = []
+    return T,Ks
+
+def find_all_solutions(T,Ks):
+    Solutions_binary = []; Solutions_int = []; Solutions_hex = []
     for Kcur in Ks:
-        solution_temp = ((np.linalg.inv(T) % 2) @ Kcur) %2
+        solution_temp = ((np.linalg.inv(T) % 2) @ Kcur) % 2
         solution = '0b'
         for value in solution_temp:
             solution = solution + str(int(value[0]))
-        Solutions_binary.append(solution)
         soultion_int = int(solution,2)
-        Solutions_int.append(soultion_int)
-        Solutions_hex.append(hex(soultion_int))
+        Solutions_binary.append(solution); Solutions_int.append(soultion_int); Solutions_hex.append(hex(soultion_int))
+    return Solutions_binary,Solutions_int,Solutions_hex
+
+def solve_system_of_equations_over_gf2(T,K,estimated_poly_deg):
+    # Solves system of equation A*x=b over GF(2)
+    print('We want to find I such that: T*I=K over GF(2)\n')
+    T_mat = create_T_matrix(T,estimated_poly_deg)
+    K_mat = create_K_matrix(K)
+    print('\nInitial T matrix: \n')
+    print_matrix_gf(T_mat)
+    print('\nInitial K vector: \n')
+    print_matrix_gf(K_mat)
+    REF_recipe_ls,RREF_recipe_ls = T_mat.reduced_row_echelon_form()
+    print('\nThe reduced T matrix: \n')
+    print_matrix_gf(T_mat)
+    K_mat = preform_vector_gauss_jordan(K_mat,REF_recipe_ls,RREF_recipe_ls)
+    print('\nThe reduced K vector: \n')
+    print_matrix_gf(K_mat)
+    T = np.array(T_mat.values)
+    K = np.array(K_mat.values)
+    zero_rows,amount_of_zero_rows = find_zero_rows_and_check_if_soultion_exist(T,K)
+    T,Ks = create_T_and_K_to_find_all_solutions(T,K,zero_rows,amount_of_zero_rows)
+    Solutions_binary,Solutions_int,Solutions_hex = find_all_solutions(T,Ks)
     return Solutions_binary,Solutions_int,Solutions_hex
 
 def estimate_xorin(crc_algorithm,estimated_poly_deg):
@@ -233,7 +247,7 @@ def estimate_xorin(crc_algorithm,estimated_poly_deg):
     K = np.zeros((estimated_poly_deg,1),np.uint64)
     for i in range(estimated_poly_deg):
         K[i] = int(bin_string[i])
-    Solutions_binary,Solutions_int,Solutions_hex = solve_system_of_equations_over_gf2(T,K)
+    Solutions_binary,Solutions_int,Solutions_hex = solve_system_of_equations_over_gf2(T,K,estimated_poly_deg)
     print('Found possible solutions: \n')
     print('Binary form: ' + str(Solutions_binary))
     print('Intger form: ' + str(Solutions_int))
