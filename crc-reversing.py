@@ -108,19 +108,37 @@ def guess_poly(crc_algorithm):
     values, counts = np.unique(polys, return_counts=True)
     ind = np.argmax(counts)
     estimated_poly_reverse = int(values[ind])
-    poly_deg = len(bin(estimated_poly_reverse)[2:])
-    estimated_poly_normal = reverse_poly(estimated_poly_reverse,poly_deg)
-    estimated_poly_recipolar = recipolar_poly(estimated_poly_normal,poly_deg)
-    estimated_poly_recipolar_reverese = reverse_recipolar_poly(estimated_poly_normal,poly_deg)
+    estimated_poly_deg = len(bin(estimated_poly_reverse)[2:])
+    estimated_poly_normal = reverse_poly(estimated_poly_reverse,estimated_poly_deg)
+    estimated_poly_recipolar = recipolar_poly(estimated_poly_normal,estimated_poly_deg)
+    estimated_poly_recipolar_reverese = reverse_recipolar_poly(estimated_poly_normal,estimated_poly_deg)
     print('\n')
     print('----------------------------------------\n')
     print('Estimated CRC polynomial:')
     print('Normal mode: ' + str(hex(estimated_poly_normal)))
     print('Reverse mode: ' + str(hex(estimated_poly_reverse)))
     print('Recipolar mode: ' + str(hex(estimated_poly_recipolar)))
-    print('Reversed recipolar mode: ' + str(hex(estimated_poly_recipolar_reverese)) + '\n')
+    print('Reversed recipolar mode: ' + str(hex(estimated_poly_recipolar_reverese)))
+    print('Polynomial degree: ' + str(estimated_poly_deg) + '\n')
     print('----------------------------------------\n')
-    return estimated_poly_normal,estimated_poly_reverse
+    return estimated_poly_normal,estimated_poly_reverse,estimated_poly_recipolar,estimated_poly_recipolar_reverese,estimated_poly_deg
+
+# def estimate_xorin(crc_algorithm):
+    
+def print_actual_crc_parameters(params):
+    # Pritnting actual CRC parameters
+    poly_known_order = params['width']
+    print('\n')
+    print('----------------------------------------\n')
+    print('Actual CRC parameters as described in CRC-engine (taken from wikipedia):')
+    print('Actual Polynomial name: ' +  params['name'])
+    print('Normal mode: ' + str(hex(params['poly'])))
+    print('Reverse mode: ' + str(hex(reverse_poly(params['poly'],poly_known_order))))
+    print('Recipolar mode: ' + str(hex(recipolar_poly(params['poly'],poly_known_order))))
+    print('Reversed recipolar mode: ' + str(hex(reverse_recipolar_poly(params['poly'],poly_known_order))))
+    print('Actual polynomial degree: ' + str(poly_known_order) + '\n')
+    print('----------------------------------------\n')
+    
     
 # %% Main
 
@@ -141,7 +159,6 @@ if __name__ == '__main__':
             print('\n')
             print('Plese write the name of the algorithm correctly!\n\n')
     params = print_crc_parameters(crc_algorithm_name)
-    estimated_poly_normal,estimated_poly_reverse = guess_poly(crc_algorithm)
-    poly_known_order = params['width']
-    print('The normal\\reversed\\recipolar\\revered recipolar polynomial representations of ' + params['name'] + ' as defined in CRC-engine (taken from wikipedia): \n')
-    print(hex(params['poly']) + '\\' + hex(reverse_poly(params['poly'],poly_known_order))  + '\\' + hex(recipolar_poly(params['poly'],poly_known_order)) + '\\' + hex(reverse_recipolar_poly(params['poly'],poly_known_order)) + '.\n')
+    estimated_poly_normal,estimated_poly_reverse,estimated_poly_recipolar,estimated_poly_recipolar_reverese,estimated_poly_deg = guess_poly(crc_algorithm)
+    print_actual_crc_parameters(params)
+    
