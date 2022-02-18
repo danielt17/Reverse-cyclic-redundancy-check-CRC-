@@ -11,6 +11,9 @@ Created on Thu Feb 17 17:51:57 2022
 import crcengine 
 import numpy as np
 from time import sleep
+from Crypto.Util.number import long_to_bytes
+import FiniteFieldAlgebra as Field
+import itertools
 
 # %% Functions
 
@@ -54,13 +57,14 @@ def calculate_and_print_result(input_string,crc_algorithm,enb_text=False):
         print('CRC int = ' + str(result) + '. Hex = 0x{:08x}'.format(result) + '\n')
     return result
 
-def differential_message(str1,str2,crc_algorithm):
+def differential_message(str1,str2,crc_algorithm,print_text=True):
     # str1 and str2 are bytearray inputs
     # print('We compute a differential (homogenous) message, removing XorIn and XorOut from the equation')
     # C1 + C2 = (T^n(I) + D1 + F) + (T^n(I) + D2 + F) =	D1 + D2 (+ = XOR = addition in GF(2))
-    print('bytearray1 = ' + str(int.from_bytes(str1, "big")))
-    print('bytearray2 = ' + str(int.from_bytes(str2, "big")))
-    print('Effective differential (homogenous) CRC (bytearray1 XOR bytearray2) = ' + str(int.from_bytes(byte_xor(str1,str2), "big")) + '\n')
+    if print_text:
+        print('bytearray1 = ' + str(int.from_bytes(str1, "big")))
+        print('bytearray2 = ' + str(int.from_bytes(str2, "big")))
+        print('Effective differential (homogenous) CRC (bytearray1 XOR bytearray2) = ' + str(int.from_bytes(byte_xor(str1,str2), "big")) + '\n')
     crc1 = calculate_and_print_result(str1,crc_algorithm)
     crc2 = calculate_and_print_result(str2,crc_algorithm)
     diff_crc = crc1 ^ crc2
@@ -123,7 +127,104 @@ def guess_poly(crc_algorithm):
     print('----------------------------------------\n')
     return estimated_poly_normal,estimated_poly_reverse,estimated_poly_recipolar,estimated_poly_recipolar_reverese,estimated_poly_deg
 
-# def estimate_xorin(crc_algorithm):
+def preform_vector_gauss_jordan(K,REF_recipe_ls,RREF_recipe_ls):
+    f = Field.PrimeField(2)
+    K_mat = Field.Matrix(K.shape[0], K.shape[1], f)
+    rows = K.shape[0]
+    for i in range(K.shape[0]):
+        K_mat.set(i, 0, int(K[i]))
+    for ind in range(len(REF_recipe_ls)):
+        numpivots = REF_recipe_ls[ind][1]
+        pivotrow = REF_recipe_ls[ind][2]
+        val_pivot_row = REF_recipe_ls[ind][3]
+        multiple_values = REF_recipe_ls[ind][4]
+        K_mat.swap_rows(numpivots, pivotrow)
+        pivotrow = numpivots
+        numpivots += 1
+        K_mat.multiply_row(pivotrow, val_pivot_row)
+        counter = 0
+        for i in range(pivotrow + 1, rows):
+            K_mat.add_rows(pivotrow, i, multiple_values[counter])
+            counter = counter + 1
+    for ind in range(len(RREF_recipe_ls)):
+        i = RREF_recipe_ls[ind][0]
+        neg_values = RREF_recipe_ls[ind][2]
+        counter = 0
+        for j in range(i):
+            K_mat.add_rows(i, j, neg_values[counter])
+            counter = counter + 1
+    return K_mat
+
+def estimate_xorin(crc_algorithm,estimated_poly_deg):
+    print('\n')
+    print('Estimating xor in value of crc code:')
+    print('Creating a basis of independet componenets, each byte array has value 2^i, where i = 0 to n - 1 (n = polynomial degree)\n')
+    ls = []
+    for i in range(estimated_poly_deg):
+        cur_val = bytearray(long_to_bytes(1<<i,estimated_poly_deg//8)) # creates powers of 2 from 1 to 2^(estimated_poly_deg-1)
+        ls.append(cur_val)
+    ls_binary_differntial = []
+    for i in range(estimated_poly_deg):
+        cur_bin = bin(differential_message(ls[(0) % estimated_poly_deg],ls[(i+1) % estimated_poly_deg],crc_algorithm,False))[2:]
+        cur_bin = (estimated_poly_deg-len(cur_bin))*'0' + cur_bin
+        ls_binary_differntial.append(cur_bin)
+    T = np.zeros((estimated_poly_deg,estimated_poly_deg),np.uint64)
+    for i in range(estimated_poly_deg):
+        for j in range(estimated_poly_deg):
+            T[j,i] = int(ls_binary_differntial[i][j]) # elements of binary string string must be columns
+    bin_string = bin(differential_message(ls[5],ls[6],crc_algorithm))[2:]
+    bin_string = (estimated_poly_deg-len(bin_string))*'0' + bin_string
+    K = np.zeros((estimated_poly_deg,1),np.uint64)
+    for i in range(estimated_poly_deg):
+        K[i] = int(bin_string[i])
+    print('We want to find I such that: T*I=K over GF(2)\n')
+    f = Field.PrimeField(2)
+    T_mat = Field.Matrix(estimated_poly_deg, estimated_poly_deg, f)
+    for i in range(estimated_poly_deg):
+        for j in range(estimated_poly_deg):
+            T_mat.set(i, j, int(T[i,j]))
+    REF_recipe_ls,RREF_recipe_ls = T_mat.reduced_row_echelon_form()
+    print('The reduced T matrix: \n')
+    for i in range(T_mat.row_count()): print(" ".join(str(T_mat.get(i, j)) for j in range(T_mat.column_count())))
+    K_mat = preform_vector_gauss_jordan(K,REF_recipe_ls,RREF_recipe_ls)
+    print('\n')
+    print('The reduced K vector: \n')
+    for i in range(K_mat.row_count()): print(" ".join(str(K_mat.get(i, j)) for j in range(K_mat.column_count())))
+    T = np.array(T_mat.values)
+    K = np.array(K_mat.values)
+    zero_rows = np.where(~T.any(axis=1))[0]
+    for zero_row in zero_rows:
+        if K[zero_rows] != 0:
+            raise Exception('Equation is unsolvable!')
+    amount_of_zero_rows = len(zero_rows)
+    for zero_row in zero_rows:
+        T[zero_row,zero_row] = 1
+    Ks = []
+    combination =["".join(seq) for seq in itertools.product("01", repeat=amount_of_zero_rows)]
+    for seq in combination:
+        counter  = 0
+        for row in zero_rows:
+            K_new = K.copy()
+            K_new[row] = int(seq[counter])
+            counter = counter + 1
+        Ks.append(K_new)
+    Solutions_binary = []
+    Solutions_int = []
+    Solutions_hex = []
+    for Kcur in Ks:
+        solution_temp = ((np.linalg.inv(T) % 2) @ Kcur) %2
+        solution = '0b'
+        for value in solution_temp:
+            solution = solution + str(int(value[0]))
+        Solutions_binary.append(solution)
+        soultion_int = int(solution,2)
+        Solutions_int.append(soultion_int)
+        Solutions_hex.append(hex(soultion_int))
+    print('Found possible solutions: \n')
+    print('Binary form: ' + str(Solutions_binary))
+    print('Intger form: ' + str(Solutions_int))
+    print('Hex form: ' + str(Solutions_hex))
+    return Solutions_int
     
 def print_actual_crc_parameters(params):
     # Pritnting actual CRC parameters
@@ -161,4 +262,6 @@ if __name__ == '__main__':
     params = print_crc_parameters(crc_algorithm_name)
     estimated_poly_normal,estimated_poly_reverse,estimated_poly_recipolar,estimated_poly_recipolar_reverese,estimated_poly_deg = guess_poly(crc_algorithm)
     print_actual_crc_parameters(params)
+    Solutions = estimate_xorin(crc_algorithm,estimated_poly_deg)
+    
     
