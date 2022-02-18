@@ -155,30 +155,8 @@ def preform_vector_gauss_jordan(K,REF_recipe_ls,RREF_recipe_ls):
             counter = counter + 1
     return K_mat
 
-def estimate_xorin(crc_algorithm,estimated_poly_deg):
-    print('\n')
-    print('Estimating xor in value of crc code:')
-    print('Creating a basis of independet componenets, each byte array has value 2^i, where i = 0 to n - 1 (n = polynomial degree)\n')
-    ls = []
-    for i in range(estimated_poly_deg):
-        cur_val = bytearray(long_to_bytes(1<<i,estimated_poly_deg//8)) # creates powers of 2 from 1 to 2^(estimated_poly_deg-1)
-        ls.append(cur_val)
-    ls_binary_differntial = []
-    for i in range(estimated_poly_deg):
-        cur_bin = bin(differential_message(ls[(i) % estimated_poly_deg],ls[(i+1) % estimated_poly_deg],crc_algorithm,False))[2:]
-        cur_bin = (estimated_poly_deg-len(cur_bin))*'0' + cur_bin
-        ls_binary_differntial.append(cur_bin)
-    T = np.zeros((estimated_poly_deg,estimated_poly_deg),np.uint64)
-    for i in range(estimated_poly_deg):
-        for j in range(estimated_poly_deg):
-            T[j,i] = int(ls_binary_differntial[i][j]) # elements of binary string string must be columns
-    intital_bin1 = ls[-2]
-    intital_bin2 = ls[-1]
-    bin_string = bin(differential_message(intital_bin1,intital_bin2,crc_algorithm) ^ calculate_and_print_result(byte_xor(intital_bin1,intital_bin2),crc_algorithm))[2:]
-    bin_string = (estimated_poly_deg-len(bin_string))*'0' + bin_string
-    K = np.zeros((estimated_poly_deg,1),np.uint64)
-    for i in range(estimated_poly_deg):
-        K[i] = int(bin_string[i])
+def solve_system_of_equations_over_gf2(T,K):
+    # Solves system of equation A*x=b over GF(2)
     print('We want to find I such that: T*I=K over GF(2)\n')
     f = Field.PrimeField(2)
     T_mat = Field.Matrix(estimated_poly_deg, estimated_poly_deg, f)
@@ -229,6 +207,33 @@ def estimate_xorin(crc_algorithm,estimated_poly_deg):
         soultion_int = int(solution,2)
         Solutions_int.append(soultion_int)
         Solutions_hex.append(hex(soultion_int))
+    return Solutions_binary,Solutions_int,Solutions_hex
+
+def estimate_xorin(crc_algorithm,estimated_poly_deg):
+    print('\n')
+    print('Estimating xor in value of crc code:')
+    print('Creating a basis of independet componenets, each byte array has value 2^i, where i = 0 to n - 1 (n = polynomial degree)\n')
+    ls = []
+    for i in range(estimated_poly_deg):
+        cur_val = bytearray(long_to_bytes(1<<i,estimated_poly_deg//8)) # creates powers of 2 from 1 to 2^(estimated_poly_deg-1)
+        ls.append(cur_val)
+    ls_binary_differntial = []
+    for i in range(estimated_poly_deg):
+        cur_bin = bin(differential_message(ls[(i) % estimated_poly_deg],ls[(i+1) % estimated_poly_deg],crc_algorithm,False))[2:]
+        cur_bin = (estimated_poly_deg-len(cur_bin))*'0' + cur_bin
+        ls_binary_differntial.append(cur_bin)
+    T = np.zeros((estimated_poly_deg,estimated_poly_deg),np.uint64)
+    for i in range(estimated_poly_deg):
+        for j in range(estimated_poly_deg):
+            T[j,i] = int(ls_binary_differntial[i][j]) # elements of binary string string must be columns
+    intital_bin1 = ls[-2]
+    intital_bin2 = ls[-1]
+    bin_string = bin(differential_message(intital_bin1,intital_bin2,crc_algorithm) ^ calculate_and_print_result(byte_xor(intital_bin1,intital_bin2),crc_algorithm))[2:]
+    bin_string = (estimated_poly_deg-len(bin_string))*'0' + bin_string
+    K = np.zeros((estimated_poly_deg,1),np.uint64)
+    for i in range(estimated_poly_deg):
+        K[i] = int(bin_string[i])
+    Solutions_binary,Solutions_int,Solutions_hex = solve_system_of_equations_over_gf2(T,K)
     print('Found possible solutions: \n')
     print('Binary form: ' + str(Solutions_binary))
     print('Intger form: ' + str(Solutions_int))
