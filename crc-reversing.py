@@ -172,7 +172,7 @@ def estimate_xorin(crc_algorithm,estimated_poly_deg):
     for i in range(estimated_poly_deg):
         for j in range(estimated_poly_deg):
             T[j,i] = int(ls_binary_differntial[i][j]) # elements of binary string string must be columns
-    bin_string = bin(differential_message(ls[5],ls[6],crc_algorithm))[2:]
+    bin_string = bin(differential_message(ls[0],ls[1],crc_algorithm) ^ calculate_and_print_result(byte_xor(ls[0],ls[1]),crc_algorithm))[2:]
     bin_string = (estimated_poly_deg-len(bin_string))*'0' + bin_string
     K = np.zeros((estimated_poly_deg,1),np.uint64)
     for i in range(estimated_poly_deg):
@@ -185,8 +185,10 @@ def estimate_xorin(crc_algorithm,estimated_poly_deg):
             T_mat.set(i, j, int(T[i,j]))
     print('Initial T matrix: \n')
     for i in range(T_mat.row_count()): print(" ".join(str(T_mat.get(i, j)) for j in range(T_mat.column_count())))
+    print('\n')
     print('Initial K vector: \n')
     print(K)
+    print('\n')
     REF_recipe_ls,RREF_recipe_ls = T_mat.reduced_row_echelon_form()
     print('The reduced T matrix: \n')
     for i in range(T_mat.row_count()): print(" ".join(str(T_mat.get(i, j)) for j in range(T_mat.column_count())))
@@ -194,6 +196,7 @@ def estimate_xorin(crc_algorithm,estimated_poly_deg):
     print('\n')
     print('The reduced K vector: \n')
     for i in range(K_mat.row_count()): print(" ".join(str(K_mat.get(i, j)) for j in range(K_mat.column_count())))
+    print('\n')
     T = np.array(T_mat.values)
     K = np.array(K_mat.values)
     zero_rows = np.where(~T.any(axis=1))[0]
