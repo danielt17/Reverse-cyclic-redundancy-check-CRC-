@@ -250,15 +250,24 @@ def Create_Example_Mode_Data(crc_algorithm,hand_crafted = True):
         type_header     = bytearray([0,1])
         dst_address     = bytearray([27,96])
         src_address     = bytearray([120,226])
+        sequence_numbers = [bytearray([10,0]),bytearray([8,0]),bytearray([8,0]),bytearray([12,0]),
+                            bytearray([10,0]),bytearray([8,0]),bytearray([24,0]),bytearray([8,0]),
+                            bytearray([12,0]),bytearray([4,0]),bytearray([24,0]),bytearray([8,0]),
+                            bytearray([12,0]),bytearray([4,0]),bytearray([24,0])]
         data            = bytearray([5,10])
         packet_header = preamble_header + sync_header + type_header + dst_address + src_address
         packets = []
-        for i in range(8):
-            sequence_number = bytearray([0,i+1])
-            packet = packet_header + sequence_number + data
-            crc = Get_CRC(packet,crc_algorithm)
-            packet = packet + crc
-            packets.append(packet)
+        for j in range(2):
+            for i in range(15):
+                if j == 0:
+                    sequence_number = sequence_numbers[i]
+                elif j == 1:
+                    sequence_number = sequence_numbers[i][::-1]
+                packet = packet_header + sequence_number + data
+                crc = Get_CRC(packet,crc_algorithm)
+                packet = packet + crc
+                packets.append(packet)
+        
     else:
         packet1 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10]);    packet1 += Get_CRC(packet1,crc_algorithm);
         packet2 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8]);     packet2 += Get_CRC(packet2,crc_algorithm);
@@ -275,18 +284,16 @@ def Create_Example_Mode_Data(crc_algorithm,hand_crafted = True):
         packet13 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12]);    packet13 += Get_CRC(packet13,crc_algorithm);
         packet14 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4]);     packet14 += Get_CRC(packet14,crc_algorithm);
         packet15 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,24]);    packet15 += Get_CRC(packet15,crc_algorithm);
-        packet16 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8]);     packet16 += Get_CRC(packet16,crc_algorithm);
-        
-        packets = [packet1,packet2,packet3,packet4,packet5,packet6,packet7,packet8,packet9,packet10,packet11,packet12,packet13,packet14,packet15,packet16]
+        packets = [packet1,packet2,packet3,packet4,packet5,packet6,packet7,packet8,packet9,packet10,packet11,packet12,packet13,packet14,packet15]
     Print_Packets(packets)
     return packets
 
-def Get_Initial_Example_Mode_data():
+def Get_Initial_Example_Mode_data(hand_crafted=True):
     '''
     Description:
         This function creates packets in example mode, for a given crc algorithm.
     Inputs:
-        None.
+        hand_crafted - boolean - either hand crafted samples or actual packets.
     Outputs:
         packets - list - a list of packets with data + crc at the end.
         crc_width - int - the length of the crc polynomial.
@@ -301,7 +308,7 @@ def Get_Initial_Example_Mode_data():
         except:
             print("\nPlese write the name of the algorithm correctly!\n\n")      
     crc_width = Print_Crc_Parameters(crc_algorithm_name)
-    packets = Create_Example_Mode_Data(crc_algorithm,hand_crafted = True)
+    packets = Create_Example_Mode_Data(crc_algorithm,hand_crafted = hand_crafted)
     return packets,crc_width
 
 def Check_Data_Input(packet,input_type,logger):
@@ -406,7 +413,7 @@ def Get_Initial_Data(program_mode,logger):
         data_and_crcs - list - of combinations of data and crcs
     '''
     if program_mode == 1:
-        packets,crc_width = Get_Initial_Example_Mode_data()
+        packets,crc_width = Get_Initial_Example_Mode_data(hand_crafted=False)
         
     elif program_mode == 2:
         packets,crc_width = Get_Initial_User_Mode_data(logger)
@@ -478,7 +485,7 @@ def Differential_Message(crc1,crc2):
     diff_crc = Byte_Xor(crc1,crc2)
     return diff_crc
 
-def Estimate_Poly(diff_crc1,diff_crc2):
+def Estimate_Poly(diff_crc1,diff_crc2,shift_by=1):
     '''
     Description:
         We need a spanning basis to reverse the polynomial of the crc therefore
@@ -492,9 +499,9 @@ def Estimate_Poly(diff_crc1,diff_crc2):
     diff_crc1_int = Bytearray_To_Int(diff_crc1);
     diff_crc2_int = Bytearray_To_Int(diff_crc2);
     if diff_crc1_int >= diff_crc2_int:
-        poly = (diff_crc2_int>>1)^diff_crc1_int
+        poly = (diff_crc2_int>>shift_by)^diff_crc1_int
     else:
-        poly = (diff_crc1_int>>1)^diff_crc2_int
+        poly = (diff_crc1_int>>shift_by)^diff_crc2_int
     return poly
 
 def Full_Process_Estimating_Poly(crc1,crc2,crc3,crc4):
@@ -546,11 +553,11 @@ def Main():
     first_step_packets,second_step_packets = Preprocessing(packets,crc_width)
     poly = Estimate_Poly_Over_All_Packets(first_step_packets)
     Print_All_Polynomial_Representations(poly,crc_width)
+    return first_step_packets
     
 # %% Run main
 
 if __name__ == '__main__':
-    Main()
-    
+    first_step_packets = Main()
     
     
