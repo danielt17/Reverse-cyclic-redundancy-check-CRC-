@@ -132,7 +132,7 @@ def Print_Packets(packets):
     for i in range(len(packets)):
         print('Packet ' + str(i) + ': ' + packets[i].hex())
 
-# %% Functions
+# %% User interaction functions
 
 def Print_Start_Program_Text():
     '''
@@ -235,7 +235,7 @@ def Get_Initial_Example_Mode_data():
     packets = Create_Example_Mode_Data(crc_algorithm,hand_crafted = True)
     return packets,crc_width
 
-def Check_Data_Input(packet,input_type):
+def Check_Data_Input(packet,input_type,logger):
     '''
     Description:
         This function gets a packet and input type (binary or hexadecimal) and
@@ -259,13 +259,13 @@ def Check_Data_Input(packet,input_type):
     return True
             
 
-def Get_Initial_User_Mode_data():
+def Get_Initial_User_Mode_data(logger):
     '''
     Description:
         This function get packets in user mode, while interacting with the user
         for different sets of information.
     Inputs:
-        None.
+        loggere - logger object.
     Outputs:
         packets - list - a list of packets with data + crc at the end.
         crc_width - int - the length of the crc polynomial.
@@ -314,7 +314,7 @@ def Get_Initial_User_Mode_data():
                 else:
                     packet = input('Enter you packet in hexadecimal: ').lower()
                 try:
-                    if Check_Data_Input(packet,data_type):
+                    if Check_Data_Input(packet,data_type,logger):
                         if data_type == 'binary':
                             packets.append(Bitstring_To_Bytes(packet))
                         elif data_type == 'hex':
@@ -340,25 +340,80 @@ def Get_Initial_Data(program_mode,logger):
         packets,crc_width = Get_Initial_Example_Mode_data()
         
     elif program_mode == 2:
-        packets,crc_width = Get_Initial_User_Mode_data()
+        packets,crc_width = Get_Initial_User_Mode_data(logger)
     else:
         raise Exception(logger.critical("Cirtical path should not reach this."))
     return packets,crc_width
 
 def Start_Program(logger):
+    '''
+    Description:
+        This function starts the run of the CRC reversing tool, collects the user
+        data, and output the packets and the crc width of the crc we want to reverse.
+    Inputs:
+        logger - logger object.
+    Outputs:
+        packets - list - a list of packets.
+        crc_width - int - length or degree of the crc.
+    '''
     Print_Start_Program_Text()
     program_mode = Choose_Program_Mode()
     packets,crc_width = Get_Initial_Data(program_mode,logger)
     return packets,crc_width
 
+# %% Preprocessing
+
+def Preprocessing(packets,crc_width):
+    '''
+    Description:
+        This function preprocess the data by spliting the packets list into packet 
+        and crc combination by using crc_width parameter, the new sub lists are 
+        made of byte arrays.
+    Inputs:
+        packets - list - a list of packets
+        crc_width - int - length or degree of the crc.
+    Outputs:
+        
+    '''
+    new_packets = []
+    for packet in packets:
+        cur_packet = packet[:-crc_width//8];  cur_crc = packet[-crc_width//8:]
+        packet_crc_pair = [cur_packet,cur_crc]
+        new_packets.append(packet_crc_pair)
+    return new_packets
+
+# %% Reversing CRC
+
+def Differential_Message(crc1,crc2):
+    '''
+    Description:
+        This function computes a differential or in another name homogenous message,
+        removing XorIn and XorOut from the equation. This is can be seen in the equation below:
+        C1 + C2 = (T^n(I) + D1 + F) + (T^n(I) + D2 + F) = D1 + D2.
+        Where C1 and C2 are the inhomogenous crcs, I representes the XorIn value, T
+        represents the shift operator of the CRC, D1 and D2 are the homogenous crcs, F
+        is the XorOut value, n is the degree of the crc polynomial, and addition 
+        is in GF(2) and equivalent to xor.
+    Inputs:
+        crc1 and crc2 - byte arrays - crc values to compute the differential off.
+    Outputs:
+        diff_crc - byte array - differential crc.
+    '''
+    diff_crc = Byte_Xor(crc1,crc2)
+    return diff_crc
+
+# %% Main function
+
 def Main():
     logger = Logger_Object()
     packets,crc_width = Start_Program(logger)
+    packets = Preprocessing(packets,crc_width)
+    return packets
     
-# %% Main
+# %% Run main
 
 if __name__ == '__main__':
-    Main()
+    packets = Main()
     
     
     
