@@ -252,6 +252,7 @@ def Create_Example_Mode_Data(crc_algorithm,hand_crafted = True):
         src_address     = bytearray([120,226])
         sequence_numbers = [bytearray([10,0]),bytearray([8,0]),bytearray([8,0]),bytearray([12,0]),
                             bytearray([10,0]),bytearray([8,0]),bytearray([24,0]),bytearray([8,0]),
+                            bytearray([10,0]),bytearray([20,0]),bytearray([30,0]),bytearray([40,0]),
                             bytearray([12,0]),bytearray([4,0]),bytearray([24,0]),bytearray([8,0]),
                             bytearray([12,0]),bytearray([4,0]),bytearray([24,0])]
         data            = bytearray([5,10])
@@ -543,8 +544,62 @@ def Estimate_Poly_Over_All_Packets(first_step_packets):
     
 # %% Reversing CRC - Part 2 - Estimating XorIn
 
+def Remove_Zeros_From_Binary(string):
+    counter = 0
+    for char in string:
+        if char == '0':
+            counter += 1
+        else:
+            break
+    return string[counter:]
 
+def Poly_Mod(a, b):
+    while a.bit_length() >= b.bit_length():
+        a ^= b << (a.bit_length() - b.bit_length())
+    return a
 
+def Poly_GCD(a, b):
+    if a < b:
+        temp = a
+        a = b
+        b = temp
+    while b != 0:
+        a, b = b, Poly_Mod(a, b)
+    return a
+
+def testing(m1,m2,m3):
+    # m1 = int('aaff0040', 16); r1 = int('2eec', 16)
+    # m2 = int('aaff0050', 16); r2 = int('2b08', 16)
+    # packet1 = m1.to_bytes(ceil(m1.bit_length()/8),'little') + r1.to_bytes(ceil(r1.bit_length()/8),'little')
+    # packet2 = m2.to_bytes(ceil(m2.bit_length()/8),'little') + r2.to_bytes(ceil(r2.bit_length()/8),'little')
+    # print(bin(Bytearray_To_Int(Byte_Xor(packet1,packet2)))[2:])
+    
+    
+    # m1 = int('aaff00402eec', 16)
+    # m2 = int('aaff00602964', 16)
+    # m3 = int('aaff00502b08', 16)
+    # packet1 = m1.to_bytes(ceil(m1.bit_length()/8),'little')
+    # packet2 = m2.to_bytes(ceil(m2.bit_length()/8),'little')
+    # packet3 = m3.to_bytes(ceil(m3.bit_length()/8),'little')
+    # m_endian = 'little'; r_endian = 'little'
+    # packet1 = m1.to_bytes(ceil(m1.bit_length()/8),m_endian) + r1.to_bytes(ceil(r1.bit_length()/8),r_endian)
+    # packet2 = m2.to_bytes(ceil(m2.bit_length()/8),m_endian) + r2.to_bytes(ceil(r2.bit_length()/8),r_endian)
+    # packet3 = m3.to_bytes(ceil(m2.bit_length()/8),m_endian) + r3.to_bytes(ceil(r3.bit_length()/8),r_endian)
+    endian = 'little'
+    packet1 = m1.to_bytes(ceil(m1.bit_length()/8),endian)
+    packet2 = m2.to_bytes(ceil(m2.bit_length()/8),endian)
+    packet3 = m3.to_bytes(ceil(m3.bit_length()/8),endian)
+    homogenous_packet1 = bin(Bytearray_To_Int(Byte_Xor(packet1,packet2)))[2:][::-1]
+    homogenous_packet2 = bin(Bytearray_To_Int(Byte_Xor(packet1,packet3)))[2:][::-1]
+    homogenous_packet1 = Remove_Zeros_From_Binary(homogenous_packet1)
+    homogenous_packet2 = Remove_Zeros_From_Binary(homogenous_packet2)
+    homogenous_packet1 = int(homogenous_packet1,2)
+    homogenous_packet2 = int(homogenous_packet2,2)
+    poly = Poly_GCD(homogenous_packet2, homogenous_packet1)
+    print('GCD method: ' + hex(poly) + '.\n')
+    Print_All_Polynomial_Representations(poly,32)
+    
+    
 # %% Main function
 
 def Main():
@@ -559,5 +614,15 @@ def Main():
 
 if __name__ == '__main__':
     first_step_packets = Main()
+    m1 = Bytearray_To_Int(first_step_packets[8][0] + first_step_packets[8][1])
+    m2 = Bytearray_To_Int(first_step_packets[9][0] + first_step_packets[9][1])
+    m3 = Bytearray_To_Int(first_step_packets[10][0] + first_step_packets[10][1])
+    # r1 = Bytearray_To_Int(first_step_packets[0][1])
+    # r2 = Bytearray_To_Int(first_step_packets[1][1])
+    # r3 = Bytearray_To_Int(first_step_packets[3][1])
+    # m1 = Bytearray_To_Int(first_step_packets[0][0])
+    # m2 = Bytearray_To_Int(first_step_packets[1][0])
+    # m3 = Bytearray_To_Int(first_step_packets[3][0])
+    testing(m1,m2,m3)
     
     
