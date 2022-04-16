@@ -9,9 +9,6 @@ Created on Sat Apr 16 12:41:30 2022
 
 import crcengine 
 import numpy as np
-from time import sleep
-from Crypto.Util.number import long_to_bytes
-import itertools
 import logging
 from math import ceil
 
@@ -69,6 +66,18 @@ def Bitstring_To_Bytes(s):
         return - byte array of s.
     '''
     return int(s, 2).to_bytes((len(s) + 7) // 8, byteorder='big')
+
+def Bytearray_To_Int(s):
+    '''
+    Description: 
+        This function turn a byte array into an int.
+    Inputs:
+        s - byte array.
+    Outputs:
+        returns - int.
+    '''
+    return int.from_bytes(s, "big")
+    
 
 def Byte_Xor(ba1, ba2):
     """
@@ -130,7 +139,58 @@ def Print_Packets(packets):
     '''
     print('\nPresenting packets inputed by user: \n')
     for i in range(len(packets)):
-        print('Packet ' + str(i) + ': ' + packets[i].hex())
+        print('Packet ' + str(i+1) + ': ' + packets[i].hex())
+
+def reverse_poly(poly,order):
+    '''
+    Description:
+        Printing reverse polynomial representation.
+    Inputs:
+        poly - int - polynomial coefficents
+        order - int - polynomial degree
+    Outputs:
+        return - int - reverse polynomial represenation
+    '''
+    len_string = order - len(bin(poly)[2:])
+    return int(bin(poly)[::-1][:-2],2) << len_string
+
+def recipolar_poly(poly,order):
+    '''
+    Description:
+        Printing recipolar polynomial representation: p(x) -> p(x^(-1))*x^n. 
+    Inputs:
+        poly - int - polynomial coefficents
+        order - int - polynomial degree
+    Outputs:
+        return - int - reverse polynomial represenation
+    '''
+    temp = bin(poly)[::-1][:-2][1:]
+    temp = temp  + '0'*(order-len(temp)-1) + '1'
+    return int(temp,2)
+
+def Print_All_Polynomial_Representations(poly,crc_width):
+    '''
+    Description:
+        This function prints all possible polynomial representations. 
+    Inputs:
+        poly - int - polynomial coefficents
+        crc_width - int - polynomial degree
+    Outputs:
+        None.
+        Prints all possible polynomial representations.
+    '''
+    estimated_reverse_poly = reverse_poly(poly,crc_width)
+    estimated_poly_recipolar = recipolar_poly(estimated_reverse_poly,crc_width)
+    estimated_poly_recipolar_reverese = reverse_poly(estimated_poly_recipolar,crc_width)
+    print('\n')
+    print('----------------------------------------\n')
+    print('Estimated CRC polynomial:')
+    print('Normal mode: ' + str(hex(poly)))
+    print('Reverse mode: ' + str(hex(estimated_reverse_poly)))
+    print('Recipolar mode: ' + str(hex(estimated_poly_recipolar)))
+    print('Reversed recipolar mode: ' + str(hex(estimated_poly_recipolar_reverese)))
+    print('----------------------------------------\n')
+    
 
 # %% User interaction functions
 
@@ -204,11 +264,20 @@ def Create_Example_Mode_Data(crc_algorithm,hand_crafted = True):
         packet2 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8]);     packet2 += Get_CRC(packet2,crc_algorithm);
         packet3 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8]);     packet3 += Get_CRC(packet3,crc_algorithm);
         packet4 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12]);    packet4 += Get_CRC(packet4,crc_algorithm);
-        packet5 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12]);    packet5 += Get_CRC(packet5,crc_algorithm);
-        packet6 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4]);     packet6 += Get_CRC(packet6,crc_algorithm);
+        packet5 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10]);    packet5 += Get_CRC(packet5,crc_algorithm);
+        packet6 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8]);     packet6 += Get_CRC(packet6,crc_algorithm);
         packet7 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,24]);    packet7 += Get_CRC(packet7,crc_algorithm);
         packet8 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8]);     packet8 += Get_CRC(packet8,crc_algorithm);
-        packets = [packet1,packet2,packet3,packet4,packet5,packet6,packet7,packet8]
+        packet9 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12]);    packet9 += Get_CRC(packet9,crc_algorithm);
+        packet10 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4]);     packet10 += Get_CRC(packet10,crc_algorithm);
+        packet11 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,24]);    packet11 += Get_CRC(packet11,crc_algorithm);
+        packet12 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8]);     packet12 += Get_CRC(packet12,crc_algorithm);
+        packet13 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12]);    packet13 += Get_CRC(packet13,crc_algorithm);
+        packet14 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4]);     packet14 += Get_CRC(packet14,crc_algorithm);
+        packet15 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,24]);    packet15 += Get_CRC(packet15,crc_algorithm);
+        packet16 = bytearray([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8]);     packet16 += Get_CRC(packet16,crc_algorithm);
+        
+        packets = [packet1,packet2,packet3,packet4,packet5,packet6,packet7,packet8,packet9,packet10,packet11,packet12,packet13,packet14,packet15,packet16]
     Print_Packets(packets)
     return packets
 
@@ -307,7 +376,7 @@ def Get_Initial_User_Mode_data(logger):
     packets = []
     for i in range(number_of_packets):
         if i == ceil(number_of_packets/1.5):
-            print('Enter packets of unequal length\n')
+            print('\nEnter packets of unequal length\n')
         while True:
                 if data_type == 'binary':
                     packet = input('Enter you packet in binary: ').lower()
@@ -373,14 +442,21 @@ def Preprocessing(packets,crc_width):
         packets - list - a list of packets
         crc_width - int - length or degree of the crc.
     Outputs:
-        
+        first_step_packets - a list of lists of packets of equal length
+        second_step_packets - a list of lists of packets of unequal length
     '''
     new_packets = []
     for packet in packets:
         cur_packet = packet[:-crc_width//8];  cur_crc = packet[-crc_width//8:]
         packet_crc_pair = [cur_packet,cur_crc]
         new_packets.append(packet_crc_pair)
-    return new_packets
+    num_packets = len(new_packets)
+    first_step_packets_num = ceil(num_packets/1.5)
+    if first_step_packets_num % 2 == 1:
+        first_step_packets_num = first_step_packets_num - 1
+    first_step_packets      =   new_packets[:first_step_packets_num]
+    second_step_packets     =   new_packets[first_step_packets_num+1:]
+    return first_step_packets,second_step_packets
 
 # %% Reversing CRC
 
@@ -402,18 +478,75 @@ def Differential_Message(crc1,crc2):
     diff_crc = Byte_Xor(crc1,crc2)
     return diff_crc
 
+def Estimate_Poly(diff_crc1,diff_crc2):
+    '''
+    Description:
+        We need a spanning basis to reverse the polynomial of the crc therefore
+        diff_crc are the differntial message (Homgenous) output of the differntial message algorithm
+        such that CRC(2^n) and CRC(2^(n+1)) are used to get the polynomial charateristic.
+    Inputs:
+        diff_crc1,diff_crc2 - byte arrays - differntial crc messages.
+    Outputs:
+        returns a hex represenation of the polynomial coefficents.
+    '''
+    diff_crc1_int = Bytearray_To_Int(diff_crc1);
+    diff_crc2_int = Bytearray_To_Int(diff_crc2);
+    if diff_crc1_int >= diff_crc2_int:
+        poly = (diff_crc2_int>>1)^diff_crc1_int
+    else:
+        poly = (diff_crc1_int>>1)^diff_crc2_int
+    return poly
+
+def Full_Process_Estimating_Poly(crc1,crc2,crc3,crc4):
+    '''
+    Description:
+        This function gets 4 crcs of equal size and estimates the crcs polynomial
+        coefficents.
+    Inputs:
+        crc1,crc2,crc3,crc4 - byte arays - byte arrays of crcs.
+    Outputs:
+        poly - int - estimated polynimial.
+    '''
+    diff_crc1 = Differential_Message(crc1,crc2)
+    diff_crc2 = Differential_Message(crc3,crc4)
+    poly = Estimate_Poly(diff_crc1,diff_crc2)
+    return poly
+
+def Estimate_Poly_Over_All_Packets(first_step_packets):
+    '''
+    Description:
+        This function estimated the polynomial over all the given first step packets
+        given by the user.
+    Inputs:
+        first_step_packets - A list of lists with a combination of data + crc.
+    Outputs:
+        poly - int - estimated polynimial.
+    '''
+    polys = []
+    amount_of_quads = len(first_step_packets)//2 - 1
+    for i in range(amount_of_quads):
+        poly = Full_Process_Estimating_Poly(first_step_packets[2*i][1],first_step_packets[2*i+1][1],first_step_packets[2*i+2][1],first_step_packets[2*i+3][1])
+        polys.append(poly)
+    polys = np.asarray(polys,np.uint64)
+    polys = polys[polys != 0]
+    values, counts = np.unique(polys, return_counts=True)
+    ind = np.argmax(counts)
+    poly = values[ind]
+    return poly
+    
 # %% Main function
 
 def Main():
     logger = Logger_Object()
     packets,crc_width = Start_Program(logger)
-    packets = Preprocessing(packets,crc_width)
-    return packets
+    first_step_packets,second_step_packets = Preprocessing(packets,crc_width)
+    poly = Estimate_Poly_Over_All_Packets(first_step_packets)
+    Print_All_Polynomial_Representations(poly,crc_width)
     
 # %% Run main
 
 if __name__ == '__main__':
-    packets = Main()
+    Main()
     
     
     
