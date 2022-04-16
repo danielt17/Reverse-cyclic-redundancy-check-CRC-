@@ -458,7 +458,7 @@ def Preprocessing(packets,crc_width):
     second_step_packets     =   new_packets[first_step_packets_num+1:]
     return first_step_packets,second_step_packets
 
-# %% Reversing CRC
+# %% Reversing CRC - Part 1 - Estimating the polynomial
 
 def Differential_Message(crc1,crc2):
     '''
@@ -534,6 +534,10 @@ def Estimate_Poly_Over_All_Packets(first_step_packets):
     poly = values[ind]
     return poly
     
+# %% Reversing CRC - Part 2 - Estimating XorIn
+
+
+
 # %% Main function
 
 def Main():
