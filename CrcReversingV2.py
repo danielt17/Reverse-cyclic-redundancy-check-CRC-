@@ -569,7 +569,7 @@ def Estimate_Poly_Over_All_Packets_Method_1(first_step_packets):
     '''
     Description:
         This function estimated the polynomial over all the given first step packets
-        given by the user.
+        given by the user using Xor shift method.
     Inputs:
         first_step_packets - A list of lists with a combination of data + crc.
     Outputs:
@@ -651,7 +651,7 @@ def Packet_Transform_To_Message_Big_Endian_Crc_Little_Endian_Concatenate_Turn_To
     packet_int = Bytearray_To_Int(m + Int_To_Bytearray(r,'little'))
     return packet_int
 
-def Pre_Processing_Packets_Method2(packet1,packet2,packet3):
+def Pre_Processing_Packets_Method_2(packet1,packet2,packet3):
     '''
     Description:
         This function preprocesses three packets into appropraite usage in the
@@ -667,7 +667,7 @@ def Pre_Processing_Packets_Method2(packet1,packet2,packet3):
     packet3_int = Packet_Transform_To_Message_Big_Endian_Crc_Little_Endian_Concatenate_Turn_To_Int_Big_Endian(packet3)
     return packet1_int,packet2_int,packet3_int
 
-def Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int,crc_width):
+def Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int):
     '''
     Description:
         This function does polynomial recovery from using the GCD from 3 pakcets.
@@ -678,7 +678,6 @@ def Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int,crc_width
             2. crc in little endian byte array representation.
             3. concatenate m + crc into one byte array
             4. turn to int in big endian.
-        crc_width - int - the crc polynomial degree we want to estiamte.
     Outputs:
         poly - int - return estimated polynomial (0 for not estimated).
     '''
@@ -690,18 +689,44 @@ def Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int,crc_width
     homogenous_packet2 = bin(Bytearray_To_Int(Byte_Xor(packet1,packet3)))[2:][::-1]
     homogenous_packet1 = Remove_Zeros_From_Binary_String(homogenous_packet1)
     homogenous_packet2 = Remove_Zeros_From_Binary_String(homogenous_packet2)
-    homogenous_packet1 = int(homogenous_packet1,2); homogenous_packet2 = int(homogenous_packet2,2)
+    try:
+        homogenous_packet1 = int(homogenous_packet1,2); homogenous_packet2 = int(homogenous_packet2,2)
+    except:
+        print("There's a sequence where the same packet happenss twice, not using it.")
+        poly = 0 
+        return poly
     poly = Poly_GCD(homogenous_packet2, homogenous_packet1)
     try:
         poly = int(hex(poly)[3:],16)
-        print('\n\n\nGCD method: ' + hex(poly) + '.')
-        Print_All_Polynomial_Representations(poly,crc_width)
     except:
         print("The inputed packets don't supply enough information, please supply other packets.\n")
         poly = 0
     return poly
     
+def Estimate_Poly_Over_All_Packets_Method_2(first_step_packets):
+    '''
+    Description:
+        This function estimated the polynomial over all the given first step packets
+        given by the user using GCD method.
+    Inputs:
+        first_step_packets - A list of lists with a combination of data + crc.
+    Outputs:
+        poly - int - estimated polynimial.
+    '''
+    polys = []
+    amount_of_triplets = len(first_step_packets)-2
+    for i in range(amount_of_triplets):
+        packet1_int,packet2_int,packet3_int = Pre_Processing_Packets_Method_2(first_step_packets[i],first_step_packets[i+1],first_step_packets[i+2])
+        poly = Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int)
+        polys.append(poly)
+    polys = np.asarray(polys,np.uint64)
+    polys = polys[polys != 0]
+    values, counts = np.unique(polys, return_counts=True)
+    inds = np.argpartition(counts, -3)[-3:] # Three most occuring polynomial
+    polys_best = values[inds][::-1]
+    return polys_best
     
+
 # %% Reversing CRC - Part 2 - Estimating XorIn
     
 # %% Main function
@@ -710,16 +735,16 @@ def Main():
     logger = Logger_Object()
     packets,crc_width = Start_Program(logger)
     first_step_packets,second_step_packets = Preprocessing(packets,crc_width)
-    polys = Estimate_Poly_Over_All_Packets_Method_1(first_step_packets)
     print('\n\nEstimating using method 1 (Xor-shift method):\n')
+    polys1 = Estimate_Poly_Over_All_Packets_Method_1(first_step_packets)
     print('Printing the three most likely polynomials: \n')
-    for poly in polys:
+    for poly in polys1:
         Print_All_Polynomial_Representations(poly,crc_width)
-    #####
-    packet1_int,packet2_int,packet3_int = Pre_Processing_Packets_Method2(first_step_packets[7],first_step_packets[8],first_step_packets[9])
-    #####
     print('\n\nEstimating using method 2 (GCD method):\n')
-    Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int,crc_width)
+    polys2 = Estimate_Poly_Over_All_Packets_Method_2(first_step_packets)
+    print('\n\nPrinting the three most likely polynomials: \n')
+    for poly in polys2:
+        Print_All_Polynomial_Representations(poly,crc_width)
     return first_step_packets,crc_width
     
 # %% Run main
