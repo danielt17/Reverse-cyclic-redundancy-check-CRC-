@@ -220,15 +220,20 @@ def Print_All_Polynomial_Representations(poly,crc_width):
         Prints all possible polynomial representations.
     '''
     estimated_reverse_poly = reverse_poly(poly,crc_width)
-    estimated_poly_recipolar = recipolar_poly(estimated_reverse_poly,crc_width)
-    estimated_poly_recipolar_reverese = reverse_poly(estimated_poly_recipolar,crc_width)
+    estimated_poly_recipolar = recipolar_poly(poly,crc_width)
+    estimated_poly_recipolar_reverese = reverse_poly(poly,crc_width)
+    estimated_reverse_poly_recipolar = recipolar_poly(estimated_reverse_poly,crc_width)
+    estimated_reverse_poly_recipolar_reverese = reverse_poly(estimated_poly_recipolar,crc_width)
+    
     print('\n')
     print('----------------------------------------')
     print('Estimated CRC polynomial:')
-    print('Normal mode: ' + str(hex(poly)))
-    print('Reverse mode: ' + str(hex(estimated_reverse_poly)))
-    print('Recipolar mode: ' + str(hex(estimated_poly_recipolar)))
-    print('Reversed recipolar mode: ' + str(hex(estimated_poly_recipolar_reverese)))
+    print('Normal mode:                     ' + str(hex(poly)))
+    print('Reverse mode:                    ' + str(hex(estimated_reverse_poly)))
+    print('Recipolar mode:                  ' + str(hex(estimated_poly_recipolar)))
+    print('Reversed recipolar mode:         ' + str(hex(estimated_poly_recipolar_reverese)))
+    print('Recipolar reverse mode:          ' + str(hex(estimated_reverse_poly_recipolar)))
+    print('Reversed recipolar reverse mode: ' + str(hex(estimated_reverse_poly_recipolar_reverese)))
     print('----------------------------------------\n')
     
 
@@ -618,7 +623,7 @@ def Poly_Mod(a, b):
 def Poly_GCD(a, b):
     '''
     Description:
-        This function computres the GCD between two polynomials over GF(2).
+        This function computes the GCD between two polynomials over GF(2).
     Inputs:
         a,b - ints - both of the variables are the int represenations of polynomial
         parameters.
@@ -631,7 +636,38 @@ def Poly_GCD(a, b):
         a, b = b, Poly_Mod(a, b)
     return a
 
-def Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int,crc_width,logger):
+def Packet_Transform_To_Message_Big_Endian_Crc_Little_Endian_Concatenate_Turn_To_Int_Big_Endian(packet):
+    '''
+    Description:
+        This function preprocesses packets into the following represenation
+        packet -> int(m(big endian) + crc(little endian)) where int is read as big
+        endian.
+    Inputs:
+        packet - list - a list containing msg and crc pair.
+    Outputs:
+        packet_int - int - the packets in int representation according to the method.
+    '''
+    m = packet[0]; r = Bytearray_To_Int(packet[1])
+    packet_int = Bytearray_To_Int(m + Int_To_Bytearray(r,'little'))
+    return packet_int
+
+def Pre_Processing_Packets_Method2(packet1,packet2,packet3):
+    '''
+    Description:
+        This function preprocesses three packets into appropraite usage in the
+        function Polynomial_Recovery_Gcd_Method.
+    Inputs:
+        packet1, packet2, packet3 - lists - are lists containing msg and crc pairs.
+    Outputs:
+        packet1_int,packet2_int,packet3_int - ints - the packets in int representation
+        according to the preprocessing method.
+    '''
+    packet1_int = Packet_Transform_To_Message_Big_Endian_Crc_Little_Endian_Concatenate_Turn_To_Int_Big_Endian(packet1)
+    packet2_int = Packet_Transform_To_Message_Big_Endian_Crc_Little_Endian_Concatenate_Turn_To_Int_Big_Endian(packet2)
+    packet3_int = Packet_Transform_To_Message_Big_Endian_Crc_Little_Endian_Concatenate_Turn_To_Int_Big_Endian(packet3)
+    return packet1_int,packet2_int,packet3_int
+
+def Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int,crc_width):
     '''
     Description:
         This function does polynomial recovery from using the GCD from 3 pakcets.
@@ -643,7 +679,6 @@ def Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int,crc_width
             3. concatenate m + crc into one byte array
             4. turn to int in big endian.
         crc_width - int - the crc polynomial degree we want to estiamte.
-        logger - logger object.
     Outputs:
         poly - int - return estimated polynomial (0 for not estimated).
     '''
@@ -676,19 +711,15 @@ def Main():
     packets,crc_width = Start_Program(logger)
     first_step_packets,second_step_packets = Preprocessing(packets,crc_width)
     polys = Estimate_Poly_Over_All_Packets_Method_1(first_step_packets)
-    print('\n\nPrinting the three most likely polynomials: \n')
+    print('\n\nEstimating using method 1 (Xor-shift method):\n')
+    print('Printing the three most likely polynomials: \n')
     for poly in polys:
         Print_All_Polynomial_Representations(poly,crc_width)
     #####
-    m1 = first_step_packets[7][0]; r1 = Bytearray_To_Int(first_step_packets[7][1])
-    m2 = first_step_packets[8][0]; r2 = Bytearray_To_Int(first_step_packets[8][1])
-    m3 = first_step_packets[9][0]; r3 = Bytearray_To_Int(first_step_packets[9][1])
-    endian = 'little'
-    packet1_int = Bytearray_To_Int(m1 + Int_To_Bytearray(r1,endian))
-    packet2_int = Bytearray_To_Int(m2 + Int_To_Bytearray(r2,endian))
-    packet3_int = Bytearray_To_Int(m3 + Int_To_Bytearray(r3,endian))
+    packet1_int,packet2_int,packet3_int = Pre_Processing_Packets_Method2(first_step_packets[7],first_step_packets[8],first_step_packets[9])
     #####
-    Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int,crc_width,logger)
+    print('\n\nEstimating using method 2 (GCD method):\n')
+    Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int,crc_width)
     return first_step_packets,crc_width
     
 # %% Run main
