@@ -56,6 +56,19 @@ def Logger_Object():
 
 # %% Helper functions
 
+def Swap(a,b):
+    '''
+    Description: 
+        This function swaps two variables.
+    Inputs:
+        a,b - ints.
+    Outputs:
+        c,d - ints.
+    '''
+    c = b
+    d = a
+    return c,d
+
 def Bitstring_To_Bytes(s):
     '''
     Description: 
@@ -67,7 +80,7 @@ def Bitstring_To_Bytes(s):
     '''
     return int(s, 2).to_bytes((len(s) + 7) // 8, byteorder='big')
 
-def Bytearray_To_Int(s):
+def Bytearray_To_Int(s,endian="big"):
     '''
     Description: 
         This function turn a byte array into an int.
@@ -76,8 +89,35 @@ def Bytearray_To_Int(s):
     Outputs:
         returns - int.
     '''
-    return int.from_bytes(s, "big")
-    
+    return int.from_bytes(s, endian)
+
+def Int_To_Bytearray(s,endian="big"):
+    '''
+    Description: 
+        This function turns an int into a bytearray.
+    Inputs:
+        s - int.
+    Outputs:
+        returns - byte array.
+    '''
+    return s.to_bytes(ceil(s.bit_length()/8),endian)
+
+def Remove_Zeros_From_Binary_String(string):
+    '''
+    Description: 
+        This function removes preappended zeros to a binary string.
+    Inputs:
+        string - a string sequence of ones and zeros.
+    Outputs:
+        string - without preappended zeros.
+    '''
+    counter = 0
+    for char in string:
+        if char == '0':
+            counter += 1
+        else:
+            break
+    return string[counter:]
 
 def Byte_Xor(ba1, ba2):
     """
@@ -183,7 +223,7 @@ def Print_All_Polynomial_Representations(poly,crc_width):
     estimated_poly_recipolar = recipolar_poly(estimated_reverse_poly,crc_width)
     estimated_poly_recipolar_reverese = reverse_poly(estimated_poly_recipolar,crc_width)
     print('\n')
-    print('----------------------------------------\n')
+    print('----------------------------------------')
     print('Estimated CRC polynomial:')
     print('Normal mode: ' + str(hex(poly)))
     print('Reverse mode: ' + str(hex(estimated_reverse_poly)))
@@ -252,7 +292,7 @@ def Create_Example_Mode_Data(crc_algorithm,hand_crafted = True):
         src_address     = bytearray([120,226])
         sequence_numbers = [bytearray([10,0]),bytearray([8,0]),bytearray([8,0]),bytearray([12,0]),
                             bytearray([10,0]),bytearray([8,0]),bytearray([24,0]),bytearray([8,0]),
-                            bytearray([10,0]),bytearray([20,0]),bytearray([30,0]),bytearray([40,0]),
+                            bytearray([40,0]),bytearray([60,0]),bytearray([50,0]),bytearray([70,0]),
                             bytearray([12,0]),bytearray([4,0]),bytearray([24,0]),bytearray([8,0]),
                             bytearray([12,0]),bytearray([4,0]),bytearray([24,0])]
         data            = bytearray([5,10])
@@ -380,7 +420,7 @@ def Get_Initial_User_Mode_data(logger):
         else:
             print("\nPlease write a correct representation either: binary or hex!\n\n")  
     print('When enetering packets start with the data, and than concatenate the crc.\n')
-    print('Enter packets of equal length\n')
+    print('Enter packets of equal length, with 1 bit difference, look at packets where only sequence number changes. \n')
     packets = []
     for i in range(number_of_packets):
         if i == ceil(number_of_packets/1.5):
@@ -466,7 +506,7 @@ def Preprocessing(packets,crc_width):
     second_step_packets     =   new_packets[first_step_packets_num+1:]
     return first_step_packets,second_step_packets
 
-# %% Reversing CRC - Part 1 - Estimating the polynomial
+# %% Reversing CRC - Part 1 - Estimating the polynomial - Method 1
 
 def Differential_Message(crc1,crc2):
     '''
@@ -520,7 +560,7 @@ def Full_Process_Estimating_Poly(crc1,crc2,crc3,crc4):
     poly = Estimate_Poly(diff_crc1,diff_crc2)
     return poly
 
-def Estimate_Poly_Over_All_Packets(first_step_packets):
+def Estimate_Poly_Over_All_Packets_Method_1(first_step_packets):
     '''
     Description:
         This function estimated the polynomial over all the given first step packets
@@ -538,67 +578,96 @@ def Estimate_Poly_Over_All_Packets(first_step_packets):
     polys = np.asarray(polys,np.uint64)
     polys = polys[polys != 0]
     values, counts = np.unique(polys, return_counts=True)
-    ind = np.argmax(counts)
-    poly = values[ind]
-    return poly
+    inds = np.argpartition(counts, -3)[-3:] # Three most occuring polynomial
+    polys_best = values[inds][::-1]
+    return polys_best
     
-# %% Reversing CRC - Part 2 - Estimating XorIn
+# %% Reversing CRC - Part 1 - Estimating the polynomial - Method 2
 
-def Remove_Zeros_From_Binary(string):
-    counter = 0
-    for char in string:
-        if char == '0':
-            counter += 1
-        else:
-            break
-    return string[counter:]
+def Test_Packets():
+    '''
+    Description:
+        This function creates test packets for polynomial estimation using method 2.
+    Inputs:
+        None.
+    Outputs:
+        packet1_int,packet2_int,packet3_int - ints - packets in int representation
+        crc_width - int - polynomial degree we want to estimate.
+    '''
+    packet1_int = int('aaff00402eec', 16)
+    packet2_int = int('aaff00602964', 16)
+    packet3_int = int('aaff00502b08', 16)
+    crc_width = 16
+    return packet1_int,packet2_int,packet3_int,crc_width
 
 def Poly_Mod(a, b):
+    '''
+    Description:
+        This function calculates the polynomial modulo over GF(2) between two
+        polyinomials.
+    Inputs:
+        a,b - ints - both of the variables are the int represenations of polynomial
+        parameters.
+    Outputs:
+        a - int - modulo of the of one polynomial with respect to the other in GF(2).
+    '''
     while a.bit_length() >= b.bit_length():
         a ^= b << (a.bit_length() - b.bit_length())
     return a
 
 def Poly_GCD(a, b):
-    if a < b:
-        temp = a
-        a = b
-        b = temp
+    '''
+    Description:
+        This function computres the GCD between two polynomials over GF(2).
+    Inputs:
+        a,b - ints - both of the variables are the int represenations of polynomial
+        parameters.
+    Outputs:
+        a - int - the polynomial GCD over GF(2).
+    '''
+    if b>a:
+        a,b = Swap(a,b)
     while b != 0:
         a, b = b, Poly_Mod(a, b)
     return a
 
-def testing(m1,m2,m3):
-    # m1 = int('aaff0040', 16); r1 = int('2eec', 16)
-    # m2 = int('aaff0050', 16); r2 = int('2b08', 16)
-    # packet1 = m1.to_bytes(ceil(m1.bit_length()/8),'little') + r1.to_bytes(ceil(r1.bit_length()/8),'little')
-    # packet2 = m2.to_bytes(ceil(m2.bit_length()/8),'little') + r2.to_bytes(ceil(r2.bit_length()/8),'little')
-    # print(bin(Bytearray_To_Int(Byte_Xor(packet1,packet2)))[2:])
-    
-    
-    # m1 = int('aaff00402eec', 16)
-    # m2 = int('aaff00602964', 16)
-    # m3 = int('aaff00502b08', 16)
-    # packet1 = m1.to_bytes(ceil(m1.bit_length()/8),'little')
-    # packet2 = m2.to_bytes(ceil(m2.bit_length()/8),'little')
-    # packet3 = m3.to_bytes(ceil(m3.bit_length()/8),'little')
-    # m_endian = 'little'; r_endian = 'little'
-    # packet1 = m1.to_bytes(ceil(m1.bit_length()/8),m_endian) + r1.to_bytes(ceil(r1.bit_length()/8),r_endian)
-    # packet2 = m2.to_bytes(ceil(m2.bit_length()/8),m_endian) + r2.to_bytes(ceil(r2.bit_length()/8),r_endian)
-    # packet3 = m3.to_bytes(ceil(m2.bit_length()/8),m_endian) + r3.to_bytes(ceil(r3.bit_length()/8),r_endian)
+def Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int,crc_width,logger):
+    '''
+    Description:
+        This function does polynomial recovery from using the GCD from 3 pakcets.
+    Inputs:
+        packet1_int,packet2_int,packet3_int - ints - packet represenation in int
+        the input should be created such that it is equalivent to the following form:
+            1. m (message) in big endian byte array representation.
+            2. crc in little endian byte array representation.
+            3. concatenate m + crc into one byte array
+            4. turn to int in big endian.
+        crc_width - int - the crc polynomial degree we want to estiamte.
+        logger - logger object.
+    Outputs:
+        poly - int - return estimated polynomial (0 for not estimated).
+    '''
     endian = 'little'
-    packet1 = m1.to_bytes(ceil(m1.bit_length()/8),endian)
-    packet2 = m2.to_bytes(ceil(m2.bit_length()/8),endian)
-    packet3 = m3.to_bytes(ceil(m3.bit_length()/8),endian)
+    packet1 = packet1_int.to_bytes(ceil(packet1_int.bit_length()/8),endian)
+    packet2 = packet2_int.to_bytes(ceil(packet2_int.bit_length()/8),endian)
+    packet3 = packet3_int.to_bytes(ceil(packet3_int.bit_length()/8),endian)
     homogenous_packet1 = bin(Bytearray_To_Int(Byte_Xor(packet1,packet2)))[2:][::-1]
     homogenous_packet2 = bin(Bytearray_To_Int(Byte_Xor(packet1,packet3)))[2:][::-1]
-    homogenous_packet1 = Remove_Zeros_From_Binary(homogenous_packet1)
-    homogenous_packet2 = Remove_Zeros_From_Binary(homogenous_packet2)
-    homogenous_packet1 = int(homogenous_packet1,2)
-    homogenous_packet2 = int(homogenous_packet2,2)
+    homogenous_packet1 = Remove_Zeros_From_Binary_String(homogenous_packet1)
+    homogenous_packet2 = Remove_Zeros_From_Binary_String(homogenous_packet2)
+    homogenous_packet1 = int(homogenous_packet1,2); homogenous_packet2 = int(homogenous_packet2,2)
     poly = Poly_GCD(homogenous_packet2, homogenous_packet1)
-    print('GCD method: ' + hex(poly) + '.\n')
-    Print_All_Polynomial_Representations(poly,32)
+    try:
+        poly = int(hex(poly)[3:],16)
+        print('\n\n\nGCD method: ' + hex(poly) + '.')
+        Print_All_Polynomial_Representations(poly,crc_width)
+    except:
+        print("The inputed packets don't supply enough information, please supply other packets.\n")
+        poly = 0
+    return poly
     
+    
+# %% Reversing CRC - Part 2 - Estimating XorIn
     
 # %% Main function
 
@@ -606,23 +675,28 @@ def Main():
     logger = Logger_Object()
     packets,crc_width = Start_Program(logger)
     first_step_packets,second_step_packets = Preprocessing(packets,crc_width)
-    poly = Estimate_Poly_Over_All_Packets(first_step_packets)
-    Print_All_Polynomial_Representations(poly,crc_width)
-    return first_step_packets
+    polys = Estimate_Poly_Over_All_Packets_Method_1(first_step_packets)
+    print('\n\nPrinting the three most likely polynomials: \n')
+    for poly in polys:
+        Print_All_Polynomial_Representations(poly,crc_width)
+    #####
+    m1 = first_step_packets[7][0]; r1 = Bytearray_To_Int(first_step_packets[7][1])
+    m2 = first_step_packets[8][0]; r2 = Bytearray_To_Int(first_step_packets[8][1])
+    m3 = first_step_packets[9][0]; r3 = Bytearray_To_Int(first_step_packets[9][1])
+    endian = 'little'
+    packet1_int = Bytearray_To_Int(m1 + Int_To_Bytearray(r1,endian))
+    packet2_int = Bytearray_To_Int(m2 + Int_To_Bytearray(r2,endian))
+    packet3_int = Bytearray_To_Int(m3 + Int_To_Bytearray(r3,endian))
+    #####
+    Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int,crc_width,logger)
+    return first_step_packets,crc_width
     
 # %% Run main
 
 if __name__ == '__main__':
-    first_step_packets = Main()
-    m1 = Bytearray_To_Int(first_step_packets[8][0] + first_step_packets[8][1])
-    m2 = Bytearray_To_Int(first_step_packets[9][0] + first_step_packets[9][1])
-    m3 = Bytearray_To_Int(first_step_packets[10][0] + first_step_packets[10][1])
-    # r1 = Bytearray_To_Int(first_step_packets[0][1])
-    # r2 = Bytearray_To_Int(first_step_packets[1][1])
-    # r3 = Bytearray_To_Int(first_step_packets[3][1])
-    # m1 = Bytearray_To_Int(first_step_packets[0][0])
-    # m2 = Bytearray_To_Int(first_step_packets[1][0])
-    # m3 = Bytearray_To_Int(first_step_packets[3][0])
-    testing(m1,m2,m3)
+     Main()
+    
+    
+    
     
     
