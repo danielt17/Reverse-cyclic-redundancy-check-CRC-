@@ -811,23 +811,33 @@ def Main():
 if __name__ == '__main__':
     first_step_packets,second_step_packets,crc_width = Main()
     
-    packet1_int,packet2_int,packet3_int,crc_width = Test_Packets_GCD_Method()
-    poly = Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int)
-    poly = int('1'+ hex(poly)[2:],16)
-    packet4_hex = 'aaff00402eec'
-    packet5_hex = 'aaff040e020450'
-    packet4_len = len(bin(int(packet4_hex, 16))[2:-crc_width])
-    packet5_len = len(bin(int(packet5_hex, 16))[2:-crc_width])
-    matrix = Build_Relative_Shift_Matrix(packet4_len,packet5_len,poly,crc_width)
-    print('\n\nRelative shift matrix: \n')
-    print(matrix)
-    print('\n')
+    # packet1_int,packet2_int,packet3_int,crc_width = Test_Packets_GCD_Method()
+    # poly = Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int)
+    # poly = int('1'+ hex(poly)[2:],16)
     
-    # packet4_int = int('aaff00402eec', 16)
-    # packet5_int = int('aaff040e020450', 16)
-    # endian = 'big'
+    
+    # # Matrix
+    # packet4_hex = 'aaff00402eec'
+    # packet5_hex = 'aaff040e020450'
+    # packet4_len = len(bin(int(packet4_hex, 16))[2:-crc_width])
+    # packet5_len = len(bin(int(packet5_hex, 16))[2:-crc_width])
+    # matrix = Build_Relative_Shift_Matrix(packet4_len,packet5_len,poly,crc_width)
+    # print('\n\nRelative shift matrix: \n')
+    # print(matrix)
+    # print('\n')
+    
+    # # Vector
+    # packet4_int = int(packet4_hex, 16)
+    # packet5_int = int(packet5_hex, 16)
+    # endian = 'little'
     # packet4 = Int_To_Bytearray(packet4_int,endian)
     # packet5 = Int_To_Bytearray(packet5_int,endian)
-    # packet_diff = Bytearray_To_Int(Byte_Xor(packet4,packet5))
-    # vector = bin(Poly_Mod(packet_diff,poly))[2:]
-    # print(vector)
+    # diff_packet = bin(Bytearray_To_Int(Byte_Xor(packet4,packet5)))[2:][::-1]
+    # diff_packet_remove = Remove_Zeros_From_Binary_String(diff_packet)
+    # diff_packet_int = int(diff_packet_remove,2)
+    # vector = Poly_Mod(diff_packet_int,poly)
+    # vector_bin = bin(vector)[2:]
+    # print('\n\nVector length: '  + str(len(vector_bin)) + '. Target vector length: 16.'+'\n')
+    # print('Vector in int: '+ str(vector) + '. Target vector in int: ' + str(int('1101011011100110',2))  + '\n')
+    # print('Vector in binary: '+ vector_bin + '.\n')
+    # print('Target in binary: ' + '1101011011100110'  + '.\n')
