@@ -119,6 +119,22 @@ def Remove_Zeros_From_Binary_String(string):
             break
     return string[counter:]
 
+def Turn_Bitstring_To_Numpy_Array_Of_Bits(string,crc_width):
+    '''
+    Description:
+        This function turns a bit string into a numpy array of size crc_width
+        where each arr[i] is equal to string[i]. A binary vector in GF(2).
+    Inputs:
+        string - string - a binary string.
+        crc_width - int - the crc polynomial width
+    Outputs:
+        arr - numpy array - vector version of the binary string in GF(2).
+    '''
+    arr = np.zeros((1,crc_width),dtype=np.int64)
+    for i in range(crc_width):
+        arr[0,i] = int(string[i])
+    return arr
+
 def Byte_Xor(ba1, ba2):
     """
     Description:
@@ -308,7 +324,7 @@ def Create_Example_Mode_Data(crc_algorithm,hand_crafted = True):
         data            = bytearray([5,10])
         packet_header = preamble_header + sync_header + type_header + dst_address + src_address
         packets = []
-        for j in range(2):
+        for j in range(1):
             for i in range(len(sequence_numbers)):
                 if j == 0:
                     sequence_number = sequence_numbers[i]
@@ -602,7 +618,7 @@ def Estimate_Poly_Over_All_Packets_Method_1(first_step_packets):
     
 # %% Reversing CRC - Part 1 - Estimating the polynomial - Method 2
 
-def Test_Packets():
+def Test_Packets_GCD_Method():
     '''
     Description:
         This function creates test packets for polynomial estimation using method 2.
@@ -749,7 +765,27 @@ def Estimate_Poly_Over_All_Packets_Method_2(first_step_packets):
     
 
 # %% Reversing CRC - Part 2 - Estimating XorIn
-    
+
+def Build_Relative_Shift_Matrix(l1,l2,poly,crc_width):
+    '''
+    Description:
+        This function creates the following matrix x^k * (x^l1 + x^l2) mod p.
+        This matrix is the relative shift matrix which is described in GF(2)
+    Inputs:
+        l1 - int - length of message one in bits.
+        l2 - int - length of message two in bits.
+        poly - int - estimated crc polynomial in intger representation.
+        crc_width - int - the crc polynomial width
+    Outputs:
+        matrix - numpy array - A matrix description of the equation above in GF(2).
+    '''
+    matrix = np.zeros((crc_width,crc_width),dtype=np.int64)
+    for k in range(crc_width):
+        matrix_row = bin(Poly_Mod((2**(k)) * (2**(l1) + 2**(l2)),poly))[2:]
+        matrix_row = '0' * (crc_width-len(matrix_row)) + matrix_row
+        matrix[k,:] = Turn_Bitstring_To_Numpy_Array_Of_Bits(matrix_row,crc_width)
+    return matrix
+
 # %% Main function
 
 def Main():
@@ -768,14 +804,30 @@ def Main():
     for i in range(len(polys2)):
         print('\nProbability to be the right polynomial is: ' + str(np.round(occurrence2[i],2)) + '%.')
         Print_All_Polynomial_Representations(polys2[i],crc_width)
-    return first_step_packets,crc_width
+    return first_step_packets,second_step_packets,crc_width
     
 # %% Run main
 
 if __name__ == '__main__':
-     Main()
+    first_step_packets,second_step_packets,crc_width = Main()
     
+    packet1_int,packet2_int,packet3_int,crc_width = Test_Packets_GCD_Method()
+    poly = Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int)
+    poly = int('1'+ hex(poly)[2:],16)
+    packet4_hex = 'aaff00402eec'
+    packet5_hex = 'aaff040e020450'
+    packet4_len = len(bin(int(packet4_hex, 16))[2:-crc_width])
+    packet5_len = len(bin(int(packet5_hex, 16))[2:-crc_width])
+    matrix = Build_Relative_Shift_Matrix(packet4_len,packet5_len,poly,crc_width)
+    print('\n\nRelative shift matrix: \n')
+    print(matrix)
+    print('\n')
     
-    
-    
-    
+    # packet4_int = int('aaff00402eec', 16)
+    # packet5_int = int('aaff040e020450', 16)
+    # endian = 'big'
+    # packet4 = Int_To_Bytearray(packet4_int,endian)
+    # packet5 = Int_To_Bytearray(packet5_int,endian)
+    # packet_diff = Bytearray_To_Int(Byte_Xor(packet4,packet5))
+    # vector = bin(Poly_Mod(packet_diff,poly))[2:]
+    # print(vector)
