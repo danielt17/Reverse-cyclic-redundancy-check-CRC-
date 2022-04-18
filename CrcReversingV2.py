@@ -295,16 +295,21 @@ def Create_Example_Mode_Data(crc_algorithm,hand_crafted = True):
         type_header     = bytearray([0,1])
         dst_address     = bytearray([27,96])
         src_address     = bytearray([120,226])
-        sequence_numbers = [bytearray([10,0]),bytearray([8,0]),bytearray([8,0]),bytearray([12,0]),
-                            bytearray([10,0]),bytearray([8,0]),bytearray([24,0]),bytearray([8,0]),
-                            bytearray([40,0]),bytearray([60,0]),bytearray([50,0]),bytearray([70,0]),
-                            bytearray([12,0]),bytearray([4,0]),bytearray([24,0]),bytearray([8,0]),
-                            bytearray([12,0]),bytearray([4,0]),bytearray([24,0])]
+        
+        # sequence_numbers = [bytearray([10,0]),bytearray([8,0]),bytearray([8,0]),bytearray([12,0]),
+        #                     bytearray([10,0]),bytearray([8,0]),bytearray([24,0]),bytearray([8,0]),
+        #                     bytearray([40,0]),bytearray([60,0]),bytearray([50,0]),bytearray([70,0]),
+        #                     bytearray([12,0]),bytearray([4,0]),bytearray([24,0]),bytearray([8,0]),
+        #                     bytearray([12,0]),bytearray([4,0]),bytearray([24,0])]
+        
+        sequence_numbers = [bytearray([40,0]),bytearray([60,0]),bytearray([50,0]),bytearray([70,0]),
+                            bytearray([80,0]),bytearray([100,0]),bytearray([110,100,0])]
+        
         data            = bytearray([5,10])
         packet_header = preamble_header + sync_header + type_header + dst_address + src_address
         packets = []
         for j in range(2):
-            for i in range(15):
+            for i in range(len(sequence_numbers)):
                 if j == 0:
                     sequence_number = sequence_numbers[i]
                 elif j == 1:
@@ -583,9 +588,17 @@ def Estimate_Poly_Over_All_Packets_Method_1(first_step_packets):
     polys = np.asarray(polys,np.uint64)
     polys = polys[polys != 0]
     values, counts = np.unique(polys, return_counts=True)
-    inds = np.argpartition(counts, -3)[-3:] # Three most occuring polynomial
+    try:
+        inds = np.argpartition(counts, -3)[-3:] # Three most occuring polynomials
+    except:
+        try:
+            inds = np.argpartition(counts, -2)[-2:] # Three most occuring polynomials
+        except:
+            inds = np.argpartition(counts, -1)[-1:] # Three most occuring polynomial
+    occurrence = counts[inds][::-1]; occurrence = occurrence/np.sum(occurrence) * 100;
     polys_best = values[inds][::-1]
-    return polys_best
+    ranking = np.argsort(occurrence)[::-1]; occurrence = occurrence[ranking]; polys_best[ranking]
+    return polys_best,occurrence
     
 # %% Reversing CRC - Part 1 - Estimating the polynomial - Method 2
 
@@ -722,9 +735,17 @@ def Estimate_Poly_Over_All_Packets_Method_2(first_step_packets):
     polys = np.asarray(polys,np.uint64)
     polys = polys[polys != 0]
     values, counts = np.unique(polys, return_counts=True)
-    inds = np.argpartition(counts, -3)[-3:] # Three most occuring polynomial
-    polys_best = values[inds][::-1]
-    return polys_best
+    try:
+        inds = np.argpartition(counts, -3)[-3:] # Three most occuring polynomials
+    except:
+        try:
+            inds = np.argpartition(counts, -2)[-2:] # Two most occuring polynomials
+        except:
+            inds = np.argpartition(counts, -1)[-1:] # One most occuring polynomial
+    occurrence = counts[inds][::-1]; occurrence = occurrence/np.sum(occurrence) * 100;
+    polys_best = values[inds][::-1];
+    ranking = np.argsort(occurrence)[::-1]; occurrence = occurrence[ranking]; polys_best[ranking]
+    return polys_best,occurrence
     
 
 # %% Reversing CRC - Part 2 - Estimating XorIn
@@ -736,15 +757,17 @@ def Main():
     packets,crc_width = Start_Program(logger)
     first_step_packets,second_step_packets = Preprocessing(packets,crc_width)
     print('\n\nEstimating using method 1 (Xor-shift method):\n')
-    polys1 = Estimate_Poly_Over_All_Packets_Method_1(first_step_packets)
+    polys1,occurrence1 = Estimate_Poly_Over_All_Packets_Method_1(first_step_packets)
     print('Printing the three most likely polynomials: \n')
-    for poly in polys1:
-        Print_All_Polynomial_Representations(poly,crc_width)
+    for i in range(len(polys1)):
+        print('\nProbability to be the right polynomial is: ' + str(np.round(occurrence1[i],2)) + '%.')
+        Print_All_Polynomial_Representations(polys1[i],crc_width)
     print('\n\nEstimating using method 2 (GCD method):\n')
-    polys2 = Estimate_Poly_Over_All_Packets_Method_2(first_step_packets)
+    polys2,occurrence2 = Estimate_Poly_Over_All_Packets_Method_2(first_step_packets)
     print('\n\nPrinting the three most likely polynomials: \n')
-    for poly in polys2:
-        Print_All_Polynomial_Representations(poly,crc_width)
+    for i in range(len(polys2)):
+        print('\nProbability to be the right polynomial is: ' + str(np.round(occurrence2[i],2)) + '%.')
+        Print_All_Polynomial_Representations(polys2[i],crc_width)
     return first_step_packets,crc_width
     
 # %% Run main
