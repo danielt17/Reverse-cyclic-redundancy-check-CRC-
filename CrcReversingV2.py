@@ -254,17 +254,24 @@ def Print_All_Polynomial_Representations(poly,crc_width):
     print('----------------------------------------\n')
     
 def Ranking_Estimated_Polynomial(polys):
+    '''
+    Description:
+        This function gets a list of possible candidate polynomials, and outputs
+        the three (or two or one) most likely polynomials. 
+    Inputs:
+        polys - list - list of intgers which are candidate polynomials.
+    Outputs:
+        polys_best - list - list of the most likely polynomial to be a correct 
+        polynomial, ranked from most likely to least likely.
+        occurrence - list - the probability (in this case percentage) of a polynomial
+        to be the correct polynomial according to the algorithm.
+    '''
     polys = np.asarray(polys,np.uint64)
     polys = polys[polys != 0]
     values, counts = np.unique(polys, return_counts=True)
-    # for i in reversed(range(3)):
-    try:
-        inds = np.argpartition(counts, -3)[-3:]     # Three most occuring polynomials
-    except:
-        try:
-            inds = np.argpartition(counts, -2)[-2:] # Two most occuring polynomials
-        except:
-            inds = np.argpartition(counts, -1)[-1:] # Most occuring polynomial
+    for i in reversed(range(3)):
+        try: inds = np.argpartition(counts, -(i+1))[-(i+1):]; break;
+        except: continue;
     occurrence = counts[inds][::-1]; occurrence = occurrence/np.sum(occurrence) * 100;
     polys_best = values[inds][::-1]
     ranking = np.argsort(occurrence)[::-1]; occurrence = occurrence[ranking]; polys_best[ranking]
