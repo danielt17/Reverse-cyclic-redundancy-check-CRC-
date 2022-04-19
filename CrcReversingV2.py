@@ -69,16 +69,17 @@ def Swap(a,b):
     d = a
     return c,d
 
-def Bitstring_To_Bytes(s):
+def Bitstring_To_Bytes(s,endian='big'):
     '''
     Description: 
         This function gets a bit string binary and turns it to bytes array.
     Inputs:
         s - string - binary string.
+        endian - str - big or little endian representation
     Outputs:
         return - byte array of s.
     '''
-    return int(s, 2).to_bytes((len(s) + 7) // 8, byteorder='big')
+    return int(s, 2).to_bytes((len(s) + 7) // 8, byteorder=endian)
 
 def Bytearray_To_Int(s,endian="big"):
     '''
@@ -608,9 +609,9 @@ def Estimate_Poly_Over_All_Packets_Method_1(first_step_packets):
         inds = np.argpartition(counts, -3)[-3:] # Three most occuring polynomials
     except:
         try:
-            inds = np.argpartition(counts, -2)[-2:] # Three most occuring polynomials
+            inds = np.argpartition(counts, -2)[-2:] # Two most occuring polynomials
         except:
-            inds = np.argpartition(counts, -1)[-1:] # Three most occuring polynomial
+            inds = np.argpartition(counts, -1)[-1:] # Most occuring polynomial
     occurrence = counts[inds][::-1]; occurrence = occurrence/np.sum(occurrence) * 100;
     polys_best = values[inds][::-1]
     ranking = np.argsort(occurrence)[::-1]; occurrence = occurrence[ranking]; polys_best[ranking]
@@ -757,7 +758,7 @@ def Estimate_Poly_Over_All_Packets_Method_2(first_step_packets):
         try:
             inds = np.argpartition(counts, -2)[-2:] # Two most occuring polynomials
         except:
-            inds = np.argpartition(counts, -1)[-1:] # One most occuring polynomial
+            inds = np.argpartition(counts, -1)[-1:] # Most occuring polynomial
     occurrence = counts[inds][::-1]; occurrence = occurrence/np.sum(occurrence) * 100;
     polys_best = values[inds][::-1];
     ranking = np.argsort(occurrence)[::-1]; occurrence = occurrence[ranking]; polys_best[ranking]
@@ -765,6 +766,42 @@ def Estimate_Poly_Over_All_Packets_Method_2(first_step_packets):
     
 
 # %% Reversing CRC - Part 2 - Estimating XorIn
+
+def Test_Packets_XorIn_Estimation():
+    '''
+    Description:
+        This function creates test packets for XorIn estimation.
+    Inputs:
+        None.
+    Outputs:
+        poly - int - estimated polynomial.
+        crc_width - int - estimated polynomial degree.
+        packet4,packet5 - lists - lists of a combination of message and crc.
+    '''
+    packet1_int,packet2_int,packet3_int,crc_width = Test_Packets_GCD_Method()
+    poly = Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int)
+    packet4_hex = 'aaff00402eec'
+    packet5_hex = 'aaff040e020450'
+    packet4 = bytes.fromhex(packet4_hex)
+    packet5 = bytes.fromhex(packet5_hex)
+    packet4 = [packet4[:-crc_width//8],packet4[-crc_width//8:]]
+    packet5 = [packet5[:-crc_width//8],packet5[-crc_width//8:]]
+    return poly,crc_width,packet4,packet5
+
+def Get_Packet_Estimate_Message_Length_Binary(packet):
+    '''
+    Description:
+        This function gets a packet and estimates the message length.
+    Inputs:
+        packet - list - a list where the first entry is the message and the 
+        second is the crc.
+    Outputs:
+        message_len - int - calculates the length of the message part of the 
+        packet.
+    '''
+    message = packet[0]
+    message_len = len(bin(Bytearray_To_Int(message))[2:])
+    return message_len
 
 def Build_Relative_Shift_Matrix(l1,l2,poly,crc_width):
     '''
@@ -784,6 +821,26 @@ def Build_Relative_Shift_Matrix(l1,l2,poly,crc_width):
         matrix_row = bin(Poly_Mod((2**(k)) * (2**(l1) + 2**(l2)),poly))[2:]
         matrix_row = '0' * (crc_width-len(matrix_row)) + matrix_row
         matrix[k,:] = Turn_Bitstring_To_Numpy_Array_Of_Bits(matrix_row,crc_width)
+    return matrix
+
+def Run_Relative_Shift_Matrix(packet1,packet2,poly,crc_width):
+    '''
+    Description:
+        This function does the relevant preprocessing to calculate the relative
+        shift matrix, after being done with the preprocessing it calculates, 
+        the relative shift matrix, and returns it.
+    Inputs:
+        packet1,packet2 - lists - lists where the first entry is the message 
+        and the second is the crc.
+        poly - int - estimated crc polynomial in intger representation.
+        crc_width - int - the crc polynomial width
+    Outputs:
+        matrix - numpy array - A matrix description of the equation above in GF(2).
+    '''
+    poly_mat = int('1'+ hex(poly)[2:],16)
+    packet1_len = Get_Packet_Estimate_Message_Length_Binary(packet1) 
+    packet2_len = Get_Packet_Estimate_Message_Length_Binary(packet2)
+    matrix = Build_Relative_Shift_Matrix(packet1_len,packet2_len,poly_mat,crc_width)
     return matrix
 
 # %% Main function
@@ -810,34 +867,6 @@ def Main():
 
 if __name__ == '__main__':
     first_step_packets,second_step_packets,crc_width = Main()
+    poly,crc_width,packet4,packet5 = Test_Packets_XorIn_Estimation()
+    matrix = Run_Relative_Shift_Matrix(packet4,packet5,poly,crc_width)
     
-    packet1_int,packet2_int,packet3_int,crc_width = Test_Packets_GCD_Method()
-    poly = Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int)
-    poly = int('1'+ hex(poly)[2:],16)
-    
-    
-    # Matrix
-    packet4_hex = 'aaff00402eec'
-    packet5_hex = 'aaff040e020450'
-    packet4_len = len(bin(int(packet4_hex, 16))[2:-crc_width])
-    packet5_len = len(bin(int(packet5_hex, 16))[2:-crc_width])
-    matrix = Build_Relative_Shift_Matrix(packet4_len,packet5_len,poly,crc_width)
-    print('\n\nRelative shift matrix: \n')
-    print(matrix)
-    print('\n')
-    
-    # Vector
-    packet4_int = int(packet4_hex, 16)
-    packet5_int = int(packet5_hex, 16)
-    endian = 'little'
-    packet4 = Int_To_Bytearray(packet4_int,endian)
-    packet5 = Int_To_Bytearray(packet5_int,endian)
-    diff_packet = bin(Bytearray_To_Int(Byte_Xor(packet4,packet5)))[2:][::-1]
-    diff_packet_remove = Remove_Zeros_From_Binary_String(diff_packet)
-    diff_packet_int = int(diff_packet_remove,2)
-    vector = Poly_Mod(diff_packet_int,poly)
-    vector_bin = bin(vector)[2:]
-    print('\n\nVector length: '  + str(len(vector_bin)) + '. Target vector length: 16.'+'\n')
-    print('Vector in int: '+ str(vector) + '. Target vector in int: ' + str(int('1101011011100110',2))  + '\n')
-    print('Vector in binary: '+ vector_bin + '.\n')
-    print('Target in binary: ' + '1101011011100110'  + '.\n')
