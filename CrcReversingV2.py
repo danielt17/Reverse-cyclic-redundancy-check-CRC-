@@ -253,6 +253,22 @@ def Print_All_Polynomial_Representations(poly,crc_width):
     print('Reversed recipolar reverse mode: ' + str(hex(estimated_reverse_poly_recipolar_reverese)))
     print('----------------------------------------\n')
     
+def Ranking_Estimated_Polynomial(polys):
+    polys = np.asarray(polys,np.uint64)
+    polys = polys[polys != 0]
+    values, counts = np.unique(polys, return_counts=True)
+    # for i in reversed(range(3)):
+    try:
+        inds = np.argpartition(counts, -3)[-3:]     # Three most occuring polynomials
+    except:
+        try:
+            inds = np.argpartition(counts, -2)[-2:] # Two most occuring polynomials
+        except:
+            inds = np.argpartition(counts, -1)[-1:] # Most occuring polynomial
+    occurrence = counts[inds][::-1]; occurrence = occurrence/np.sum(occurrence) * 100;
+    polys_best = values[inds][::-1]
+    ranking = np.argsort(occurrence)[::-1]; occurrence = occurrence[ranking]; polys_best[ranking]
+    return polys_best,occurrence
 
 # %% User interaction functions
 
@@ -602,19 +618,7 @@ def Estimate_Poly_Over_All_Packets_Method_1(first_step_packets):
     for i in range(amount_of_quads):
         poly = Full_Process_Estimating_Poly(first_step_packets[2*i][1],first_step_packets[2*i+1][1],first_step_packets[2*i+2][1],first_step_packets[2*i+3][1])
         polys.append(poly)
-    polys = np.asarray(polys,np.uint64)
-    polys = polys[polys != 0]
-    values, counts = np.unique(polys, return_counts=True)
-    try:
-        inds = np.argpartition(counts, -3)[-3:] # Three most occuring polynomials
-    except:
-        try:
-            inds = np.argpartition(counts, -2)[-2:] # Two most occuring polynomials
-        except:
-            inds = np.argpartition(counts, -1)[-1:] # Most occuring polynomial
-    occurrence = counts[inds][::-1]; occurrence = occurrence/np.sum(occurrence) * 100;
-    polys_best = values[inds][::-1]
-    ranking = np.argsort(occurrence)[::-1]; occurrence = occurrence[ranking]; polys_best[ranking]
+    polys_best,occurrence = Ranking_Estimated_Polynomial(polys)
     return polys_best,occurrence
     
 # %% Reversing CRC - Part 1 - Estimating the polynomial - Method 2
@@ -749,19 +753,7 @@ def Estimate_Poly_Over_All_Packets_Method_2(first_step_packets):
         packet1_int,packet2_int,packet3_int = Pre_Processing_Packets_Method_2(first_step_packets[i],first_step_packets[i+1],first_step_packets[i+2])
         poly = Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int)
         polys.append(poly)
-    polys = np.asarray(polys,np.uint64)
-    polys = polys[polys != 0]
-    values, counts = np.unique(polys, return_counts=True)
-    try:
-        inds = np.argpartition(counts, -3)[-3:] # Three most occuring polynomials
-    except:
-        try:
-            inds = np.argpartition(counts, -2)[-2:] # Two most occuring polynomials
-        except:
-            inds = np.argpartition(counts, -1)[-1:] # Most occuring polynomial
-    occurrence = counts[inds][::-1]; occurrence = occurrence/np.sum(occurrence) * 100;
-    polys_best = values[inds][::-1];
-    ranking = np.argsort(occurrence)[::-1]; occurrence = occurrence[ranking]; polys_best[ranking]
+    polys_best,occurrence = Ranking_Estimated_Polynomial(polys)
     return polys_best,occurrence
     
 
