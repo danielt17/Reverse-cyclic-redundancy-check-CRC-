@@ -861,12 +861,12 @@ def Main():
     for i in range(len(polys2)):
         print('\nProbability to be the right polynomial is: ' + str(np.round(occurrence2[i],2)) + '%.')
         Print_All_Polynomial_Representations(polys2[i],crc_width)
-    return first_step_packets,second_step_packets,crc_width
+    return first_step_packets,second_step_packets,polys2,crc_width
     
 # %% Run main
 
 if __name__ == '__main__':
-    first_step_packets,second_step_packets,crc_width = Main()
+    first_step_packets,second_step_packets,polys2,crc_width_mine = Main()
     poly,crc_width,packet4,packet5 = Test_Packets_XorIn_Estimation()
     matrix = Run_Relative_Shift_Matrix(packet4,packet5,poly,crc_width)
     
