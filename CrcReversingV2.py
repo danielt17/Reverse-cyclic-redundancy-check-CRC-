@@ -750,7 +750,7 @@ def Estimate_Poly_Over_All_Packets_Method_2(first_step_packets):
         This function estimated the polynomial over all the given first step packets
         given by the user using GCD method.
     Inputs:
-        first_step_packets - A list of lists with a combination of data + crc.
+        first_step_packets - list - A list of lists with a combination of data + crc.
     Outputs:
         poly - int - estimated polynimial.
     '''
@@ -766,7 +766,7 @@ def Estimate_Poly_Over_All_Packets_Method_2(first_step_packets):
 
 # %% Reversing CRC - Part 2 - Estimating XorIn
 
-def Test_Packets_XorIn_Estimation():
+def Test_Packets_Xor_In_Estimation():
     '''
     Description:
         This function creates test packets for XorIn estimation.
@@ -866,6 +866,6 @@ def Main():
 
 if __name__ == '__main__':
     first_step_packets,second_step_packets,polys2,crc_width_mine = Main()
-    poly,crc_width,packet4,packet5 = Test_Packets_XorIn_Estimation()
+    poly,crc_width,packet4,packet5 = Test_Packets_Xor_In_Estimation()
     matrix = Run_Relative_Shift_Matrix(packet4,packet5,poly,crc_width)
     
