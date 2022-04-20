@@ -949,9 +949,48 @@ def Main():
     
 # %% Run main
 
+def Remove_Zeros_From_Binary_String_Back(string):
+   return Remove_Zeros_From_Binary_String(string[::-1])[::-1]
+
+def Remove_Zeros_Start_And_Back(string):
+    return Remove_Zeros_From_Binary_String_Back(Remove_Zeros_From_Binary_String(string))
+
 if __name__ == '__main__':
-    # first_step_packets,second_step_packets,polys2,crc_width_mine = Main()
-    poly,crc_width,packet4,packet5,vector = Test_Packets_Xor_In_Estimation(True)
-    matrix = Run_Relative_Shift_Matrix(packet4,packet5,poly,crc_width)
-    matrix2,vector2 = Gauss_Jordan_Elimination_In_GF_2(matrix,vector)
-    xor_in = Bytearray_To_Int(Bitstring_To_Bytes(Turn_Numpy_Array_Of_Bits_To_Bitstring(vector2,crc_width)))
+    first_step_packets,second_step_packets,polys2,crc_width_mine = Main()
+    
+    # poly,crc_width,packet4,packet5,vector = Test_Packets_Xor_In_Estimation(True)
+    # packet4[0] = bytearray([0,0]) +  packet4[0] 
+    # # packet4[0] =  packet4[0] + bytearray([0,0])
+    # estimated_reverse_poly,estimated_poly_recipolar,estimated_poly_recipolar_reverese,estimated_reverse_poly_recipolar,estimated_reverse_poly_recipolar_reverese = Generate_All_Poly_Representations(poly,crc_width)
+    # polys = [poly,poly+1,poly+2**16,estimated_reverse_poly,estimated_reverse_poly+1,estimated_reverse_poly+2**16,estimated_poly_recipolar,estimated_poly_recipolar+1,estimated_poly_recipolar+2**16,estimated_poly_recipolar_reverese,estimated_poly_recipolar_reverese+1,estimated_poly_recipolar_reverese+2**16,estimated_reverse_poly_recipolar,estimated_reverse_poly_recipolar+1,estimated_reverse_poly_recipolar+2**16,estimated_reverse_poly_recipolar_reverese,estimated_reverse_poly_recipolar_reverese+1,estimated_reverse_poly_recipolar_reverese+2**16]
+    # target = '1101011011100110'
+    # target_flip = target[::-1]
+    # target_endian = bin(Bytearray_To_Int(Int_To_Bytearray(int('1101011011100110',2)),'little'))[2:]
+    # target_endian_flip = target_endian[::-1]
+    # for cur_poly in polys:
+    #     for endian1 in ['little','big']:
+    #         for endian2 in ['little','big']:
+    #             for endian3 in ['little','big']:
+    #                 packet4_int = Bytearray_To_Int(Int_To_Bytearray(Bytearray_To_Int(packet4[0]),endian3) + Int_To_Bytearray(Bytearray_To_Int(packet4[1]),endian1),endian2)
+    #                 packet5_int = Bytearray_To_Int(Int_To_Bytearray(Bytearray_To_Int(packet5[0]),endian3) + Int_To_Bytearray(Bytearray_To_Int(packet5[1]),endian1),endian2)
+    #                 result = Poly_Mod(packet4_int ^ packet5_int,cur_poly)
+    #                 result_endian = Bytearray_To_Int(Int_To_Bytearray(result,'little'))
+    #                 if Remove_Zeros_Start_And_Back(bin(result)[2:]) in target  or Remove_Zeros_Start_And_Back(bin(result)[2:][::-1]) in target or Remove_Zeros_Start_And_Back(bin(result_endian)[2:]) in target or Remove_Zeros_Start_And_Back(bin(result_endian)[2:][::-1]) in target or Remove_Zeros_Start_And_Back(bin(result)[2:]) in target_flip  or Remove_Zeros_Start_And_Back(bin(result)[2:][::-1]) in target_flip or Remove_Zeros_Start_And_Back(bin(result_endian)[2:]) in target_flip or Remove_Zeros_Start_And_Back(bin(result_endian)[2:][::-1]) in target_flip or Remove_Zeros_Start_And_Back(bin(result)[2:]) in target_endian  or Remove_Zeros_Start_And_Back(bin(result)[2:][::-1]) in target_endian or Remove_Zeros_Start_And_Back(bin(result_endian)[2:]) in target_endian or Remove_Zeros_Start_And_Back(bin(result_endian)[2:][::-1]) in target_endian or Remove_Zeros_Start_And_Back(bin(result)[2:]) in target_endian_flip  or Remove_Zeros_Start_And_Back(bin(result)[2:][::-1]) in target_endian_flip or Remove_Zeros_Start_And_Back(bin(result_endian)[2:]) in target_endian_flip or Remove_Zeros_Start_And_Back(bin(result_endian)[2:][::-1]) in target_endian_flip:
+    #                     print('\nEndian1: ' + str(endian1) + ', Endian2: ' + str(endian2) + ', Endian3: ' + str(endian3) + ', Poly:' + str(cur_poly))
+    #                     print('Got:                 '  + bin(result)[2:])
+    #                     print('Got flip:            '  + bin(result)[2:][::-1])
+    #                     print('Got endian:          '  + bin(result_endian)[2:])
+    #                     print('Got endian flip:     '  + bin(result_endian)[2:][::-1])
+    #                     print('Target:              ' + target)
+    #                     print('Target flip:         ' + target_flip)
+    #                     print('Target endian:       ' + target_endian)
+    #                     print('Target endian flip:  ' + target_endian_flip)
+   
+                        
+        
+    # matrix = Run_Relative_Shift_Matrix(packet4,packet5,poly,crc_width)
+    # matrix2,vector2 = Gauss_Jordan_Elimination_In_GF_2(matrix,vector)
+    # xor_in = Bytearray_To_Int(Bitstring_To_Bytes(Turn_Numpy_Array_Of_Bits_To_Bitstring(vector2,crc_width)))
+    
+    
+    
