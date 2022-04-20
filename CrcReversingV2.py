@@ -240,6 +240,25 @@ def recipolar_poly(poly,order):
     temp = temp  + '0'*(order-len(temp)-1) + '1'
     return int(temp,2)
 
+def Generate_All_Poly_Representations(poly,crc_width):
+    '''
+    Description:
+        This function calculates all possible polynomial representations. 
+    Inputs:
+        poly - int - polynomial coefficents
+        crc_width - int - polynomial degree
+    Outputs:
+        estimated_reverse_poly,estimated_poly_recipolar,
+        estimated_poly_recipolar_reverese,estimated_reverse_poly_recipolar,
+        estimated_reverse_poly_recipolar_reverese - ints - polynomial representations.
+    '''
+    estimated_reverse_poly = reverse_poly(poly,crc_width)
+    estimated_poly_recipolar = recipolar_poly(poly,crc_width)
+    estimated_poly_recipolar_reverese = reverse_poly(poly,crc_width)
+    estimated_reverse_poly_recipolar = recipolar_poly(estimated_reverse_poly,crc_width)
+    estimated_reverse_poly_recipolar_reverese = reverse_poly(estimated_poly_recipolar,crc_width)
+    return estimated_reverse_poly,estimated_poly_recipolar,estimated_poly_recipolar_reverese,estimated_reverse_poly_recipolar,estimated_reverse_poly_recipolar_reverese
+
 def Print_All_Polynomial_Representations(poly,crc_width):
     '''
     Description:
@@ -251,12 +270,7 @@ def Print_All_Polynomial_Representations(poly,crc_width):
         None.
         Prints all possible polynomial representations.
     '''
-    estimated_reverse_poly = reverse_poly(poly,crc_width)
-    estimated_poly_recipolar = recipolar_poly(poly,crc_width)
-    estimated_poly_recipolar_reverese = reverse_poly(poly,crc_width)
-    estimated_reverse_poly_recipolar = recipolar_poly(estimated_reverse_poly,crc_width)
-    estimated_reverse_poly_recipolar_reverese = reverse_poly(estimated_poly_recipolar,crc_width)
-    
+    estimated_reverse_poly,estimated_poly_recipolar,estimated_poly_recipolar_reverese,estimated_reverse_poly_recipolar,estimated_reverse_poly_recipolar_reverese = Generate_All_Poly_Representations(poly,crc_width)
     print('\n')
     print('----------------------------------------')
     print('Estimated CRC polynomial:')
@@ -890,6 +904,29 @@ def Gauss_Jordan_Elimination_In_GF_2(matrix_original,vector_original):
         i += 1; j +=1
     return matrix[:,:-1],matrix[:,-1]
 
+# %% Reversing CRC - Part 3 - Estimating XorOut 
+
+def Estimate_Xor_Out(packet,poly,crc_width,xor_in,ref_in,ref_out):
+    '''
+    Description:
+        This function estimates xor_out given a packet and some parameters about
+        the crc algorithm.
+    Inputs:
+        packet - list - list where the first entry is the message 
+        and the second is the crc.
+        cur_poly - int - estimated polynomial.
+        crc_width - int - the crc polynomial width.
+        xor_in - int - estimated xor_in in value.
+        ref_in - boolean - flip or not the entry bits.
+        ref_out - boolean - flip or not the output bits.
+    Outputs:
+        xor_out - int - estimated xor_out_value.
+    '''
+    crc_algorithm = crcengine.create(poly, crc_width, xor_in, ref_in=ref_in,ref_out=ref_out, xor_out=0)
+    crc_estimated = Get_CRC(packet[0],crc_algorithm)
+    xor_out = Bytearray_To_Int(Byte_Xor(crc_estimated,packet[1]))
+    return xor_out
+            
 # %% Main function
 
 def Main():
@@ -917,4 +954,4 @@ if __name__ == '__main__':
     poly,crc_width,packet4,packet5,vector = Test_Packets_Xor_In_Estimation(True)
     matrix = Run_Relative_Shift_Matrix(packet4,packet5,poly,crc_width)
     matrix2,vector2 = Gauss_Jordan_Elimination_In_GF_2(matrix,vector)
-    print(Turn_Numpy_Array_Of_Bits_To_Bitstring(vector2,crc_width))
+    xor_in = Bytearray_To_Int(Bitstring_To_Bytes(Turn_Numpy_Array_Of_Bits_To_Bitstring(vector2,crc_width)))
