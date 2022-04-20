@@ -781,7 +781,7 @@ def Estimate_Poly_Over_All_Packets_Method_2(first_step_packets):
 
 # %% Reversing CRC - Part 2 - Estimating XorIn
 
-def Test_Packets_Xor_In_Estimation():
+def Test_Packets_Xor_In_Estimation(need_summation_vector=False):
     '''
     Description:
         This function creates test packets for XorIn estimation.
@@ -791,6 +791,9 @@ def Test_Packets_Xor_In_Estimation():
         poly - int - estimated polynomial.
         crc_width - int - estimated polynomial degree.
         packet4,packet5 - lists - lists of a combination of message and crc.
+        optional:
+            vector - numpy array - the value of the summation procedure of two
+            polynomials currently can not estimate this value well.
     '''
     packet1_int,packet2_int,packet3_int,crc_width = Test_Packets_GCD_Method()
     poly = Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int)
@@ -800,6 +803,9 @@ def Test_Packets_Xor_In_Estimation():
     packet5 = bytes.fromhex(packet5_hex)
     packet4 = [packet4[:-crc_width//8],packet4[-crc_width//8:]]
     packet5 = [packet5[:-crc_width//8],packet5[-crc_width//8:]]
+    if need_summation_vector:
+        vector = np.transpose(np.array([[1,1,0,1,0,1,1,0,1,1,1,0,0,1,1,0]],dtype=np.uint8))
+        return poly,crc_width,packet4,packet5,vector
     return poly,crc_width,packet4,packet5
 
 def Get_Packet_Estimate_Message_Length_Binary(packet):
@@ -835,6 +841,7 @@ def Build_Relative_Shift_Matrix(l1,l2,poly,crc_width):
         matrix_row = bin(Poly_Mod((2**(k)) * (2**(l1) + 2**(l2)),poly))[2:]
         matrix_row = '0' * (crc_width-len(matrix_row)) + matrix_row
         matrix[k,:] = Turn_Bitstring_To_Numpy_Array_Of_Bits(matrix_row,crc_width)
+    matrix = np.transpose(matrix)
     return matrix
 
 def Run_Relative_Shift_Matrix(packet1,packet2,poly,crc_width):
@@ -907,8 +914,7 @@ def Main():
 
 if __name__ == '__main__':
     # first_step_packets,second_step_packets,polys2,crc_width_mine = Main()
-    poly,crc_width,packet4,packet5 = Test_Packets_Xor_In_Estimation()
+    poly,crc_width,packet4,packet5,vector = Test_Packets_Xor_In_Estimation(True)
     matrix = Run_Relative_Shift_Matrix(packet4,packet5,poly,crc_width)
-    vector = np.transpose(np.array([[1,1,0,1,0,1,1,0,1,1,1,0,0,1,1,0]],dtype=np.uint8))
     matrix2,vector2 = Gauss_Jordan_Elimination_In_GF_2(matrix,vector)
     print(Turn_Numpy_Array_Of_Bits_To_Bitstring(vector2,crc_width))
