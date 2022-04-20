@@ -131,10 +131,25 @@ def Turn_Bitstring_To_Numpy_Array_Of_Bits(string,crc_width):
     Outputs:
         arr - numpy array - vector version of the binary string in GF(2).
     '''
-    arr = np.zeros((1,crc_width),dtype=np.int64)
+    arr = np.zeros((1,crc_width),dtype=np.uint8)
     for i in range(crc_width):
         arr[0,i] = int(string[i])
     return arr
+
+def Turn_Numpy_Array_Of_Bits_To_Bitstring(arr,crc_width):
+    '''
+    Description:
+        This function turns a numpy array of bits in GF(2) to a bit string.
+    Inputs:
+        arr - numpy array - a vector of bits in GF(2).
+        crc_width - int - the crc polynomial width
+    Outputs:
+        string - string - a binary string.
+    '''
+    string = ''
+    for i in range(crc_width):
+        string += str(arr[i])
+    return string
 
 def Byte_Xor(ba1, ba2):
     """
@@ -266,7 +281,7 @@ def Ranking_Estimated_Polynomial(polys):
         occurrence - list - the probability (in this case percentage) of a polynomial
         to be the correct polynomial according to the algorithm.
     '''
-    polys = np.asarray(polys,np.uint64)
+    polys = np.asarray(polys,np.int64)
     polys = polys[polys != 0]
     values, counts = np.unique(polys, return_counts=True)
     for i in reversed(range(3)):
@@ -336,14 +351,14 @@ def Create_Example_Mode_Data(crc_algorithm,hand_crafted = True):
         dst_address     = bytearray([27,96])
         src_address     = bytearray([120,226])
         
-        # sequence_numbers = [bytearray([10,0]),bytearray([8,0]),bytearray([8,0]),bytearray([12,0]),
-        #                     bytearray([10,0]),bytearray([8,0]),bytearray([24,0]),bytearray([8,0]),
-        #                     bytearray([40,0]),bytearray([60,0]),bytearray([50,0]),bytearray([70,0]),
-        #                     bytearray([12,0]),bytearray([4,0]),bytearray([24,0]),bytearray([8,0]),
-        #                     bytearray([12,0]),bytearray([4,0]),bytearray([24,0])]
+        sequence_numbers = [bytearray([10,0]),bytearray([8,0]),bytearray([8,0]),bytearray([12,0]),
+                            bytearray([10,0]),bytearray([8,0]),bytearray([24,0]),bytearray([8,0]),
+                            bytearray([40,0]),bytearray([60,0]),bytearray([50,0]),bytearray([70,0]),
+                            bytearray([12,0]),bytearray([4,0]),bytearray([24,0]),bytearray([8,0]),
+                            bytearray([12,0]),bytearray([4,0]),bytearray([24,0])]
         
-        sequence_numbers = [bytearray([40,0]),bytearray([60,0]),bytearray([50,0]),bytearray([70,0]),
-                            bytearray([80,0]),bytearray([100,0]),bytearray([110,100,0])]
+        # sequence_numbers = [bytearray([40,0]),bytearray([60,0]),bytearray([50,0]),bytearray([70,0]),
+        #                     bytearray([80,0]),bytearray([100,0]),bytearray([110,100,0])]
         
         data            = bytearray([5,10])
         packet_header = preamble_header + sync_header + type_header + dst_address + src_address
@@ -815,7 +830,7 @@ def Build_Relative_Shift_Matrix(l1,l2,poly,crc_width):
     Outputs:
         matrix - numpy array - A matrix description of the equation above in GF(2).
     '''
-    matrix = np.zeros((crc_width,crc_width),dtype=np.int64)
+    matrix = np.zeros((crc_width,crc_width),dtype=np.uint8)
     for k in range(crc_width):
         matrix_row = bin(Poly_Mod((2**(k)) * (2**(l1) + 2**(l2)),poly))[2:]
         matrix_row = '0' * (crc_width-len(matrix_row)) + matrix_row
@@ -842,6 +857,32 @@ def Run_Relative_Shift_Matrix(packet1,packet2,poly,crc_width):
     matrix = Build_Relative_Shift_Matrix(packet1_len,packet2_len,poly_mat,crc_width)
     return matrix
 
+def Gauss_Jordan_Elimination_In_GF_2(matrix_original,vector_original):
+    '''
+    Description:
+        Gauss Jordan elimination in GF(2) the function gets amtrix which represent
+        the coefficents, and a target vector, and finds the solution to the linear
+        equation.
+    Inputs:
+        matrix_original - numpy array - matrix of coefficents.
+        vector_original - numpy array - target vector.
+    Outputs:
+        matrix - numpy array - matrix in row echlon form.
+        vector - numpy array - solution to the linear equation.
+    '''
+    matrix = np.concatenate((matrix_original,vector_original),1)
+    m,n = matrix.shape; i=0; j=0;
+    while i < m and j < n:
+        k = np.argmax(matrix[i:, j]) +i
+        matrix[[k, i]] = matrix[[i, k]]
+        aijn = matrix[i, j:]
+        col = np.copy(matrix[:, j])
+        col[i] = 0
+        flip = np.outer(col, aijn)
+        matrix[:, j:] = matrix[:, j:] ^ flip
+        i += 1; j +=1
+    return matrix[:,:-1],matrix[:,-1]
+
 # %% Main function
 
 def Main():
@@ -865,7 +906,9 @@ def Main():
 # %% Run main
 
 if __name__ == '__main__':
-    first_step_packets,second_step_packets,polys2,crc_width_mine = Main()
+    # first_step_packets,second_step_packets,polys2,crc_width_mine = Main()
     poly,crc_width,packet4,packet5 = Test_Packets_Xor_In_Estimation()
     matrix = Run_Relative_Shift_Matrix(packet4,packet5,poly,crc_width)
-    
+    vector = np.transpose(np.array([[1,1,0,1,0,1,1,0,1,1,1,0,0,1,1,0]],dtype=np.uint8))
+    matrix2,vector2 = Gauss_Jordan_Elimination_In_GF_2(matrix,vector)
+    print(Turn_Numpy_Array_Of_Bits_To_Bitstring(vector2,crc_width))
