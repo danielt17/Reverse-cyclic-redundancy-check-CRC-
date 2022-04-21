@@ -240,13 +240,15 @@ def recipolar_poly(poly,order):
     temp = temp  + '0'*(order-len(temp)-1) + '1'
     return int(temp,2)
 
-def Generate_All_Poly_Representations(poly,crc_width):
+def Generate_All_Poly_Representations(poly,crc_width,enb_combinations=False):
     '''
     Description:
         This function calculates all possible polynomial representations. 
     Inputs:
         poly - int - polynomial coefficents
         crc_width - int - polynomial degree
+        enb_combinations - boolean - if enabled returns a list of all possible
+        polynomil combinations.
     Outputs:
         estimated_reverse_poly,estimated_poly_recipolar,
         estimated_poly_recipolar_reverese,estimated_reverse_poly_recipolar,
@@ -257,7 +259,17 @@ def Generate_All_Poly_Representations(poly,crc_width):
     estimated_poly_recipolar_reverese = reverse_poly(poly,crc_width)
     estimated_reverse_poly_recipolar = recipolar_poly(estimated_reverse_poly,crc_width)
     estimated_reverse_poly_recipolar_reverese = reverse_poly(estimated_poly_recipolar,crc_width)
-    return estimated_reverse_poly,estimated_poly_recipolar,estimated_poly_recipolar_reverese,estimated_reverse_poly_recipolar,estimated_reverse_poly_recipolar_reverese
+    if enb_combinations:
+        ls = [poly,estimated_reverse_poly,estimated_poly_recipolar,estimated_poly_recipolar_reverese,estimated_reverse_poly_recipolar,estimated_reverse_poly_recipolar_reverese]
+        polys = []
+        for cur_poly in ls:
+            for i in range(3):
+                if i == 0:      polys.append(cur_poly)
+                elif i == 1:    polys.append(cur_poly+1)
+                elif i == 2:    polys.append(cur_poly+2**(crc_width))
+        return polys
+    else:
+        return estimated_reverse_poly,estimated_poly_recipolar,estimated_poly_recipolar_reverese,estimated_reverse_poly_recipolar,estimated_reverse_poly_recipolar_reverese
 
 def Print_All_Polynomial_Representations(poly,crc_width):
     '''
@@ -305,6 +317,68 @@ def Ranking_Estimated_Polynomial(polys):
     polys_best = values[inds][::-1]
     ranking = np.argsort(occurrence)[::-1]; occurrence = occurrence[ranking]; polys_best[ranking]
     return polys_best,occurrence
+
+def Merge_By_Ranking_Polynomials(occurrence1,polys1,occurrence2,polys2):
+    '''
+    Description:
+        This function gets 2 lists of polynomial and two lists of there respective
+        ranking, merges and rescores them with respect to unique values. 
+    Inputs:
+        occurrence1,occurrence2 - numpy arrays - Ordered ranking of the polynomials.
+        polys1,polys2 - numpy arrays - A numpy array of the ordered polynomials.
+    Outputs:
+        polys_unique - list - list of the remaining ranked unique polynomials.
+        new_occurrences - numpy array - array of the ranking of the polynomials.
+    '''
+    occurrences = np.array(list(occurrence1) + list(occurrence2));
+    occurrences = occurrences/np.sum(occurrences)*100
+    ranking = np.argsort(occurrences)
+    occurrences = list(occurrences[ranking])[::-1]
+    polys = np.array(list(polys1) + list(polys2))
+    polys = list(polys[ranking])[::-1];
+    polys_unique,_ = np.unique(polys,return_index=True) # return indexes is enabled to make sure the algorithm does merge sort and not quick sort (changing positions altough ordered)
+    new_occurrences = [];
+    for cur_poly in polys_unique:
+        indcies = np.where(cur_poly == polys)[0]
+        temp_occurrence = 0
+        for i in indcies:
+            temp_occurrence += occurrences[i]
+        new_occurrences.append(temp_occurrence)
+    new_occurrences = np.array(new_occurrences);  ranking_new = np.argsort(new_occurrences)
+    new_occurrences = new_occurrences[ranking_new][::-1]; polys_unique = polys_unique[ranking_new][::-1]
+    polys_unique = list(polys_unique); new_occurrences = list(new_occurrences)
+    for j in range(len(polys_unique)):
+        polys_unique[j] = int(polys_unique[j])
+    return polys_unique,new_occurrences
+
+def Print_Estimated_Polynomials_And_Xor_In(generator_polys,useful_polys,useful_xor_in):
+    '''
+    Description:
+        This function gets as input three lists, the generator polynomials, 
+        actual estimated polynomial, and estimated XorIns and prints the relvant
+        information about them in hex.
+    Inputs:
+        generator_polys - list - a list of valid generator polynomials.
+        useful_polys - list - a list of actual polynomials which result in valid,
+        xor_in value.
+        useful_xor_in - list - a list of possible xor_in values.
+    Outputs:
+        None. Prints a combination of the generator polynomial, actual polynomial
+        and the estiamted XorIn-s.
+    '''
+    n = len(generator_polys)
+    print('Estimated XorIn (seed) values and its relevant generator polynomial, and actual polynomial:\n\n')
+    useful_xor_in_hex = []
+    for i in range(n):
+        ls_temp = []
+        for j in range(len(useful_xor_in[i])):
+            ls_temp.append(hex(useful_xor_in[i][j]))
+        useful_xor_in_hex.append(ls_temp)
+    for i in range(n):
+        print('Generator polynomial (taps): ' + hex(generator_polys[i]))
+        print('Actual polynomial:           ' + hex(useful_polys[i]))
+        print('Estimated XorIn (seed):      ' + str(useful_xor_in_hex[i])[2:-2])
+        print('\n\n')
 
 # %% User interaction functions
 
@@ -365,14 +439,14 @@ def Create_Example_Mode_Data(crc_algorithm,hand_crafted = True):
         dst_address     = bytearray([27,96])
         src_address     = bytearray([120,226])
         
-        sequence_numbers = [bytearray([10,0]),bytearray([8,0]),bytearray([8,0]),bytearray([12,0]),
-                            bytearray([10,0]),bytearray([8,0]),bytearray([24,0]),bytearray([8,0]),
-                            bytearray([40,0]),bytearray([60,0]),bytearray([50,0]),bytearray([70,0]),
-                            bytearray([12,0]),bytearray([4,0]),bytearray([24,0]),bytearray([8,0]),
-                            bytearray([12,0]),bytearray([4,0]),bytearray([24,0])]
+        # sequence_numbers = [bytearray([10,0]),bytearray([8,0]),bytearray([8,0]),bytearray([12,0]),
+        #                     bytearray([10,0]),bytearray([8,0]),bytearray([24,0]),bytearray([8,0]),
+        #                     bytearray([40,0]),bytearray([60,0]),bytearray([50,0]),bytearray([70,0]),
+        #                     bytearray([12,0]),bytearray([4,0]),bytearray([24,0]),bytearray([8,0]),
+        #                     bytearray([12,0]),bytearray([4,0]),bytearray([24,0])]
         
-        # sequence_numbers = [bytearray([40,0]),bytearray([60,0]),bytearray([50,0]),bytearray([70,0]),
-        #                     bytearray([80,0]),bytearray([100,0]),bytearray([110,100,0])]
+        sequence_numbers = [bytearray([40,0]),bytearray([60,0]),bytearray([50,0]),bytearray([70,0]),
+                            bytearray([80,0]),bytearray([90,0]),bytearray([150,0]),bytearray([120,0]),bytearray([100,0]),bytearray([110,100,0]),bytearray([110,100,200,0]),bytearray([110,100,200,100,0])]
         
         data            = bytearray([5,10])
         packet_header = preamble_header + sync_header + type_header + dst_address + src_address
@@ -639,13 +713,14 @@ def Full_Process_Estimating_Poly(crc1,crc2,crc3,crc4):
     poly = Estimate_Poly(diff_crc1,diff_crc2)
     return poly
 
-def Estimate_Poly_Over_All_Packets_Method_1(first_step_packets):
+def Estimate_Poly_Over_All_Packets_Method_1(first_step_packets,crc_width):
     '''
     Description:
         This function estimated the polynomial over all the given first step packets
         given by the user using Xor shift method.
     Inputs:
         first_step_packets - A list of lists with a combination of data + crc.
+        crc_width - int - estimated polynomial degree.
     Outputs:
         poly - int - estimated polynimial.
     '''
@@ -653,6 +728,8 @@ def Estimate_Poly_Over_All_Packets_Method_1(first_step_packets):
     amount_of_quads = len(first_step_packets)//2 - 1
     for i in range(amount_of_quads):
         poly = Full_Process_Estimating_Poly(first_step_packets[2*i][1],first_step_packets[2*i+1][1],first_step_packets[2*i+2][1],first_step_packets[2*i+3][1])
+        if poly >= 2**(crc_width):
+            continue
         polys.append(poly)
     polys_best,occurrence = Ranking_Estimated_Polynomial(polys)
     return polys_best,occurrence
@@ -773,13 +850,14 @@ def Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int):
         poly = 0
     return poly
     
-def Estimate_Poly_Over_All_Packets_Method_2(first_step_packets):
+def Estimate_Poly_Over_All_Packets_Method_2(first_step_packets,crc_width):
     '''
     Description:
         This function estimated the polynomial over all the given first step packets
         given by the user using GCD method.
     Inputs:
         first_step_packets - list - A list of lists with a combination of data + crc.
+        crc_width - int - estimated polynomial degree.
     Outputs:
         poly - int - estimated polynimial.
     '''
@@ -788,6 +866,8 @@ def Estimate_Poly_Over_All_Packets_Method_2(first_step_packets):
     for i in range(amount_of_triplets):
         packet1_int,packet2_int,packet3_int = Pre_Processing_Packets_Method_2(first_step_packets[i],first_step_packets[i+1],first_step_packets[i+2])
         poly = Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int)
+        if poly >= 2**(crc_width):
+            continue
         polys.append(poly)
     polys_best,occurrence = Ranking_Estimated_Polynomial(polys)
     return polys_best,occurrence
@@ -872,12 +952,35 @@ def Run_Relative_Shift_Matrix(packet1,packet2,poly,crc_width):
     Outputs:
         matrix - numpy array - A matrix description of the equation above in GF(2).
     '''
-    poly_mat = int('1'+ hex(poly)[2:],16)
     packet1_len = Get_Packet_Estimate_Message_Length_Binary(packet1) 
     packet2_len = Get_Packet_Estimate_Message_Length_Binary(packet2)
-    matrix = Build_Relative_Shift_Matrix(packet1_len,packet2_len,poly_mat,crc_width)
+    matrix = Build_Relative_Shift_Matrix(packet1_len,packet2_len,poly,crc_width)
     return matrix
 
+def Create_Target_Vector(packet1,packet2,poly,crc_width):
+    '''
+    Description:
+        This function creates the target vector which will be used to solve
+        the value of xor_in.
+    Inputs:
+        packet1,packet2 - lists - lists where the first entry is the message 
+        and the second is the crc.
+        poly - int - estimated crc polynomial in intger representation.
+        crc_width - int - the crc polynomial width
+    Outputs:
+        target_vector - numpy array - the target vector in GF(2).
+    '''
+    endian1 = 'little'; endian2 = 'little'
+    packet1_int =  Bytearray_To_Int(packet1[0] + Int_To_Bytearray(Bytearray_To_Int(packet1[1]),endian1),endian2)
+    packet2_int =  Bytearray_To_Int(packet2[0] + Int_To_Bytearray(Bytearray_To_Int(packet2[1]),endian1),endian2)
+    packet_diff = packet1_int ^ packet2_int
+    target_vector = Poly_Mod(packet_diff,poly)
+    target_vector = bin(target_vector)[2:]
+    if len(target_vector) != crc_width:
+        target_vector = '0' * (crc_width-len(target_vector)) + target_vector
+    target_vector = np.transpose(Turn_Bitstring_To_Numpy_Array_Of_Bits(target_vector,crc_width))
+    return target_vector
+    
 def Gauss_Jordan_Elimination_In_GF_2(matrix_original,vector_original):
     '''
     Description:
@@ -902,8 +1005,63 @@ def Gauss_Jordan_Elimination_In_GF_2(matrix_original,vector_original):
         flip = np.outer(col, aijn)
         matrix[:, j:] = matrix[:, j:] ^ flip
         i += 1; j +=1
-    return matrix[:,:-1],matrix[:,-1]
+    return matrix[:,:-1],matrix[:,-1]    
 
+def Estimate_Xor_In(packet1,packet2,poly,crc_width):
+    '''
+    Description:
+        This function takes two packets of unequal length and a polynomial, and
+        Estimates the corresponding Xor In value.
+    Inputs:
+        packet1,packet2 - lists - lists where the first entry is the message 
+        and the second is the crc.
+        poly - int - estimated crc polynomial in intger representation.
+        crc_width - int - the crc polynomial width
+    Outputs:
+        xor_in - binary string - estimated xor_in binary string.
+    '''
+    vector = Create_Target_Vector(packet1,packet2,poly,crc_width)
+    matrix = Run_Relative_Shift_Matrix(packet1,packet2,poly,crc_width)
+    _, xor_in = Gauss_Jordan_Elimination_In_GF_2(matrix,vector)
+    xor_in = Turn_Numpy_Array_Of_Bits_To_Bitstring(xor_in,crc_width)
+    return int(xor_in,2)
+
+def Estimate_Xor_In_All_Possiblities(second_step_packets,polys,crc_width):
+    '''
+    Description:
+        This function gets a list of packets and a list of polynomials and brute
+        forces over all possible combinations the correct xor in value with its
+        generator polynomial (taps), and actul polynomial.
+    Inputs:
+        second_step_packets - list - a list of pacekts.
+        polys - list - a list of estimated polynomials by method 1.
+        crc_width - int - the crc polynomial width
+    Outputs:
+        generator_polys - list - a list of valid generator polynomials.
+        useful_polys - list - a list of actual polynomials which result in valid,
+        xor_in value.
+        useful_xor_in - list - a list of possible xor_in values.
+    '''
+    num_of_packets = len(second_step_packets)
+    generator_polys = []; useful_polys = []; useful_xor_in = [];
+    for cur_poly in polys:
+        possible_polys = Generate_All_Poly_Representations(cur_poly,crc_width,enb_combinations=True)
+        for possible_poly in possible_polys:
+            xor_in_ls = []
+            for i in range(num_of_packets):
+                for j in range(num_of_packets):
+                    packet1 = second_step_packets[i]; packet2 = second_step_packets[j];
+                    if packet1 == packet2 or j<i:
+                        continue
+                    else:
+                        xor_in_ls.append(Estimate_Xor_In(packet1,packet2,possible_poly,crc_width))
+            xor_in_unique,counts = np.unique(xor_in_ls, return_counts=True)
+            if len(np.where(2<=counts)[0]) != 0:
+                generator_polys.append(cur_poly)
+                useful_polys.append(possible_poly)
+                useful_xor_in.append(list(xor_in_unique))
+    return generator_polys,useful_polys,useful_xor_in
+    
 # %% Reversing CRC - Part 3 - Estimating XorOut 
 
 def Estimate_Xor_Out(packet,poly,crc_width,xor_in,ref_in,ref_out):
@@ -934,63 +1092,34 @@ def Main():
     packets,crc_width = Start_Program(logger)
     first_step_packets,second_step_packets = Preprocessing(packets,crc_width)
     print('\n\nEstimating using method 1 (Xor-shift method):\n')
-    polys1,occurrence1 = Estimate_Poly_Over_All_Packets_Method_1(first_step_packets)
+    polys1,occurrence1 = Estimate_Poly_Over_All_Packets_Method_1(first_step_packets,crc_width)
     print('Printing the three most likely polynomials: \n')
     for i in range(len(polys1)):
         print('\nProbability to be the right polynomial is: ' + str(np.round(occurrence1[i],2)) + '%.')
         Print_All_Polynomial_Representations(polys1[i],crc_width)
     print('\n\nEstimating using method 2 (GCD method):\n')
-    polys2,occurrence2 = Estimate_Poly_Over_All_Packets_Method_2(first_step_packets)
+    polys2,occurrence2 = Estimate_Poly_Over_All_Packets_Method_2(first_step_packets,crc_width)
     print('\n\nPrinting the three most likely polynomials: \n')
     for i in range(len(polys2)):
         print('\nProbability to be the right polynomial is: ' + str(np.round(occurrence2[i],2)) + '%.')
         Print_All_Polynomial_Representations(polys2[i],crc_width)
-    return first_step_packets,second_step_packets,polys2,crc_width
+    polys,occurrence = Merge_By_Ranking_Polynomials(occurrence1,polys1,occurrence2,polys2)
+    print('\n\n\n')
+    print('-----------------------------------------------')
+    print('-----------------------------------------------')
+    print('-----------------------------------------------')
+    print('\n\n\n\nThe list of polynomials we will continue to use in our XorIn estimation procedure:\n\n')
+    for i in range(len(polys)):
+        print('\nProbability to be the right polynomial is: ' + str(np.round(occurrence[i],2)) + '%.')
+        Print_All_Polynomial_Representations(polys[i],crc_width)
+    print('\n\n\n\n\n')
+    generator_polys,useful_polys,useful_xor_in = Estimate_Xor_In_All_Possiblities(second_step_packets,polys,crc_width)
+    Print_Estimated_Polynomials_And_Xor_In(generator_polys,useful_polys,useful_xor_in)
+    return first_step_packets,second_step_packets,polys,crc_width,generator_polys,useful_polys,useful_xor_in
     
 # %% Run main
 
-def Remove_Zeros_From_Binary_String_Back(string):
-   return Remove_Zeros_From_Binary_String(string[::-1])[::-1]
-
-def Remove_Zeros_Start_And_Back(string):
-    return Remove_Zeros_From_Binary_String_Back(Remove_Zeros_From_Binary_String(string))
-
 if __name__ == '__main__':
-    first_step_packets,second_step_packets,polys2,crc_width_mine = Main()
-    
-    # poly,crc_width,packet4,packet5,vector = Test_Packets_Xor_In_Estimation(True)
-    # packet4[0] = bytearray([0,0]) +  packet4[0] 
-    # # packet4[0] =  packet4[0] + bytearray([0,0])
-    # estimated_reverse_poly,estimated_poly_recipolar,estimated_poly_recipolar_reverese,estimated_reverse_poly_recipolar,estimated_reverse_poly_recipolar_reverese = Generate_All_Poly_Representations(poly,crc_width)
-    # polys = [poly,poly+1,poly+2**16,estimated_reverse_poly,estimated_reverse_poly+1,estimated_reverse_poly+2**16,estimated_poly_recipolar,estimated_poly_recipolar+1,estimated_poly_recipolar+2**16,estimated_poly_recipolar_reverese,estimated_poly_recipolar_reverese+1,estimated_poly_recipolar_reverese+2**16,estimated_reverse_poly_recipolar,estimated_reverse_poly_recipolar+1,estimated_reverse_poly_recipolar+2**16,estimated_reverse_poly_recipolar_reverese,estimated_reverse_poly_recipolar_reverese+1,estimated_reverse_poly_recipolar_reverese+2**16]
-    # target = '1101011011100110'
-    # target_flip = target[::-1]
-    # target_endian = bin(Bytearray_To_Int(Int_To_Bytearray(int('1101011011100110',2)),'little'))[2:]
-    # target_endian_flip = target_endian[::-1]
-    # for cur_poly in polys:
-    #     for endian1 in ['little','big']:
-    #         for endian2 in ['little','big']:
-    #             for endian3 in ['little','big']:
-    #                 packet4_int = Bytearray_To_Int(Int_To_Bytearray(Bytearray_To_Int(packet4[0]),endian3) + Int_To_Bytearray(Bytearray_To_Int(packet4[1]),endian1),endian2)
-    #                 packet5_int = Bytearray_To_Int(Int_To_Bytearray(Bytearray_To_Int(packet5[0]),endian3) + Int_To_Bytearray(Bytearray_To_Int(packet5[1]),endian1),endian2)
-    #                 result = Poly_Mod(packet4_int ^ packet5_int,cur_poly)
-    #                 result_endian = Bytearray_To_Int(Int_To_Bytearray(result,'little'))
-    #                 if Remove_Zeros_Start_And_Back(bin(result)[2:]) in target  or Remove_Zeros_Start_And_Back(bin(result)[2:][::-1]) in target or Remove_Zeros_Start_And_Back(bin(result_endian)[2:]) in target or Remove_Zeros_Start_And_Back(bin(result_endian)[2:][::-1]) in target or Remove_Zeros_Start_And_Back(bin(result)[2:]) in target_flip  or Remove_Zeros_Start_And_Back(bin(result)[2:][::-1]) in target_flip or Remove_Zeros_Start_And_Back(bin(result_endian)[2:]) in target_flip or Remove_Zeros_Start_And_Back(bin(result_endian)[2:][::-1]) in target_flip or Remove_Zeros_Start_And_Back(bin(result)[2:]) in target_endian  or Remove_Zeros_Start_And_Back(bin(result)[2:][::-1]) in target_endian or Remove_Zeros_Start_And_Back(bin(result_endian)[2:]) in target_endian or Remove_Zeros_Start_And_Back(bin(result_endian)[2:][::-1]) in target_endian or Remove_Zeros_Start_And_Back(bin(result)[2:]) in target_endian_flip  or Remove_Zeros_Start_And_Back(bin(result)[2:][::-1]) in target_endian_flip or Remove_Zeros_Start_And_Back(bin(result_endian)[2:]) in target_endian_flip or Remove_Zeros_Start_And_Back(bin(result_endian)[2:][::-1]) in target_endian_flip:
-    #                     print('\nEndian1: ' + str(endian1) + ', Endian2: ' + str(endian2) + ', Endian3: ' + str(endian3) + ', Poly:' + str(cur_poly))
-    #                     print('Got:                 '  + bin(result)[2:])
-    #                     print('Got flip:            '  + bin(result)[2:][::-1])
-    #                     print('Got endian:          '  + bin(result_endian)[2:])
-    #                     print('Got endian flip:     '  + bin(result_endian)[2:][::-1])
-    #                     print('Target:              ' + target)
-    #                     print('Target flip:         ' + target_flip)
-    #                     print('Target endian:       ' + target_endian)
-    #                     print('Target endian flip:  ' + target_endian_flip)
-   
-                        
-        
-    # matrix = Run_Relative_Shift_Matrix(packet4,packet5,poly,crc_width)
-    # matrix2,vector2 = Gauss_Jordan_Elimination_In_GF_2(matrix,vector)
-    # xor_in = Bytearray_To_Int(Bitstring_To_Bytes(Turn_Numpy_Array_Of_Bits_To_Bitstring(vector2,crc_width)))
-    
+    first_step_packets,second_step_packets,polys,crc_width,generator_polys,useful_polys,useful_xor_in = Main()
     
     
