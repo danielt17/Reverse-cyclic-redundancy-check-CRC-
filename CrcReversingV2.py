@@ -318,6 +318,31 @@ def Ranking_Estimated_Polynomial(polys):
     ranking = np.argsort(occurrence)[::-1]; occurrence = occurrence[ranking]; polys_best[ranking]
     return polys_best,occurrence
 
+def Print_Estimated_Polynomial_By_Ranking_After_Method(polys,occurrence,crc_width,enable_pre_text=True):
+    '''
+    Description:
+        This fucntion gets a list of ranking (occurrence) and polynomial and 
+        print them in this order. 
+    Inputs:
+        polys - list - list of possible candidate polynomials.
+        occurrence - numpy array - Ordered ranking of the polynomials.
+        crc_width - int - estimated polynomial degree
+    Outputs:
+        None. Prints polynomial in order of ranking.
+    '''
+    if enable_pre_text:
+        print('\n\nPrinting the three most likely polynomials: \n')
+    else:
+        print('\n\n\n\n\n')
+        print('-------------------------------------------------------------------------------------')
+        print('The list of polynomials we will continue to use in our XorIn estimation procedure:')
+        print('-------------------------------------------------------------------------------------\n\n')
+    for i in range(len(polys)):
+        print('\nProbability to be the right polynomial is: ' + str(np.round(occurrence[i],2)) + '%.')
+        Print_All_Polynomial_Representations(polys[i],crc_width)
+    if not enable_pre_text:
+        print('\n\n\n\n\n')
+
 def Merge_By_Ranking_Polynomials(occurrence1,polys1,occurrence2,polys2):
     '''
     Description:
@@ -367,7 +392,10 @@ def Print_Estimated_Polynomials_And_Xor_In(generator_polys,useful_polys,useful_x
         and the estiamted XorIn-s.
     '''
     n = len(generator_polys)
-    print('Estimated XorIn (seed) values and its relevant generator polynomial, and actual polynomial:\n\n')
+    print('------------------------------------------------------------------------------------------------')
+    print('Estimated XorIn (seed) values and its relevant generator polynomial, and actual polynomial:')
+    print('------------------------------------------------------------------------------------------------')
+    print('\n\n')
     useful_xor_in_hex = []
     for i in range(n):
         ls_temp = []
@@ -379,6 +407,56 @@ def Print_Estimated_Polynomials_And_Xor_In(generator_polys,useful_polys,useful_x
         print('Actual polynomial:           ' + hex(useful_polys[i]))
         print('Estimated XorIn (seed):      ' + str(useful_xor_in_hex[i])[2:-2])
         print('\n\n')
+    print('-----------------------------------------------')
+    print('\n\n\n')
+
+def Print_All_Possible_Xor_Outs(combinations):
+    '''
+    Description:
+        This function prints out combinations of estimated polynomial,XorIn and
+        XorOut.
+    Inputs:
+        combinations - list of lists - list of lists of possible estimated parameters.
+    Outputs:
+        None. Prints a combination of the generator polynomial, XorIn, and
+        XorOut.
+    '''
+    print('\n\n')
+    print('----------------------------------')
+    print('Estimated XorOut combinations:')
+    print('----------------------------------')
+    print('\n\n')
+    for i in range(len(combinations)):
+        print('Generator polynomial (taps): ' + hex(combinations[i][0]))
+        print('Estimated XorIn (seed):      ' + hex(combinations[i][2]))
+        print('Estimated XorOut (Mask/Final):     ' + hex(combinations[i][5]))
+        print('\n')
+    print('\n\n\n\n\n')
+
+def Print_Estimated_Full_Estimated(combinations):
+    '''
+    Description:
+        This function print a crcengine like description of the estimated CRC.
+    Inputs:
+        combinations - list of lists - list of lists of possible estimated parameters.
+    Outputs:
+        None. Print crcengine like description of the estimated CRC.
+    '''
+    print('\n\n\n\n\n\n\n\n\n')
+    print('-----------------------------------------------')
+    print('Results of CRC reverse engneering algorithm:')
+    print('-----------------------------------------------')
+    for i in range(len(combinations)):
+        print('\n')
+        print('-----------------------------------------------')
+        print('poly:        ' + hex(combinations[i][0]))
+        print('width:       ' + str(combinations[i][1]))
+        print('seed:        ' + hex(combinations[i][2]))
+        print('ref_in:      ' + str(combinations[i][3]))
+        print('ref_out:     ' + str(combinations[i][4]))
+        print('xor_out:     ' + hex(combinations[i][5]))
+        print('-----------------------------------------------')
+    print('\n\n\n\n\n\n\n\n')
 
 # %% User interaction functions
 
@@ -724,6 +802,11 @@ def Estimate_Poly_Over_All_Packets_Method_1(first_step_packets,crc_width):
     Outputs:
         poly - int - estimated polynimial.
     '''
+    print('\n\n')
+    print('-------------------------------------------------')
+    print('Estimating using method 1 (Xor-shift method):')
+    print('-------------------------------------------------')
+    print('\n')
     polys = []
     amount_of_quads = len(first_step_packets)//2 - 1
     for i in range(amount_of_quads):
@@ -861,6 +944,11 @@ def Estimate_Poly_Over_All_Packets_Method_2(first_step_packets,crc_width):
     Outputs:
         poly - int - estimated polynimial.
     '''
+    print('\n\n')
+    print('--------------------------------------------')
+    print('Estimating using method 2 (GCD method):')
+    print('--------------------------------------------')
+    print('\n')
     polys = []
     amount_of_triplets = len(first_step_packets)-2
     for i in range(amount_of_triplets):
@@ -1061,7 +1149,7 @@ def Estimate_Xor_In_All_Possiblities(second_step_packets,polys,crc_width):
                 useful_polys.append(possible_poly)
                 useful_xor_in.append(list(xor_in_unique))
     return generator_polys,useful_polys,useful_xor_in
-    
+
 # %% Reversing CRC - Part 3 - Estimating XorOut 
 
 def Estimate_Xor_Out(packet,poly,crc_width,xor_in,ref_in,ref_out):
@@ -1084,42 +1172,62 @@ def Estimate_Xor_Out(packet,poly,crc_width,xor_in,ref_in,ref_out):
     crc_estimated = Get_CRC(packet[0],crc_algorithm)
     xor_out = Bytearray_To_Int(Byte_Xor(crc_estimated,packet[1]))
     return xor_out
-            
+
+def Estimate_Xor_Out_All_Possiblities(first_step_packets,second_step_packets,generator_polys,useful_xor_in,crc_width):
+    '''
+    Description:
+        This function gets packets, the generator polynomial estimated and the 
+        relevant xor in values and returns over them all the most likely xor out
+        value, and description of crc parameters.
+    Inputs:
+        first_step_packets,second_step_packets - lists - list where the first 
+        entry is the message and the second is the crc.
+        generator_polys - list - list of valid generator polynomials.
+        useful_xor_in - list of lists - valid estimated xor_in values with the
+        corresponding generator polynomial.
+        crc_width - int - the crc polynomial width.
+    Outputs:
+        combinations - list - a list of the following estimated parameters
+        [poly,crc_width,xor_in,ref_in,ref_out,xor_out].
+    '''
+    ref_ins = [True,False]; ref_outs = [True,False];
+    packets = first_step_packets + second_step_packets
+    combinations = [];
+    for i in range(len(generator_polys)):
+        poly = int(generator_polys[i])
+        possible_xor_in = useful_xor_in[i]
+        for xor_in in possible_xor_in:
+            for ref_in in ref_ins:
+                for ref_out in ref_outs:
+                    xor_outs = []
+                    for packet in packets:
+                        xor_out = Estimate_Xor_Out(packet,poly,crc_width,int(xor_in),ref_in,ref_out)
+                        xor_outs.append(xor_out)
+                    if len(xor_outs) == np.unique(xor_outs,return_counts=True)[1][0]:
+                        combinations.append([poly,crc_width,xor_in,ref_in,ref_out,xor_out])
+    return combinations
+
 # %% Main function
 
 def Main():
     logger = Logger_Object()
     packets,crc_width = Start_Program(logger)
     first_step_packets,second_step_packets = Preprocessing(packets,crc_width)
-    print('\n\nEstimating using method 1 (Xor-shift method):\n')
     polys1,occurrence1 = Estimate_Poly_Over_All_Packets_Method_1(first_step_packets,crc_width)
-    print('Printing the three most likely polynomials: \n')
-    for i in range(len(polys1)):
-        print('\nProbability to be the right polynomial is: ' + str(np.round(occurrence1[i],2)) + '%.')
-        Print_All_Polynomial_Representations(polys1[i],crc_width)
-    print('\n\nEstimating using method 2 (GCD method):\n')
+    Print_Estimated_Polynomial_By_Ranking_After_Method(polys1,occurrence1,crc_width)
     polys2,occurrence2 = Estimate_Poly_Over_All_Packets_Method_2(first_step_packets,crc_width)
-    print('\n\nPrinting the three most likely polynomials: \n')
-    for i in range(len(polys2)):
-        print('\nProbability to be the right polynomial is: ' + str(np.round(occurrence2[i],2)) + '%.')
-        Print_All_Polynomial_Representations(polys2[i],crc_width)
+    Print_Estimated_Polynomial_By_Ranking_After_Method(polys2,occurrence2,crc_width)
     polys,occurrence = Merge_By_Ranking_Polynomials(occurrence1,polys1,occurrence2,polys2)
-    print('\n\n\n')
-    print('-----------------------------------------------')
-    print('-----------------------------------------------')
-    print('-----------------------------------------------')
-    print('\n\n\n\nThe list of polynomials we will continue to use in our XorIn estimation procedure:\n\n')
-    for i in range(len(polys)):
-        print('\nProbability to be the right polynomial is: ' + str(np.round(occurrence[i],2)) + '%.')
-        Print_All_Polynomial_Representations(polys[i],crc_width)
-    print('\n\n\n\n\n')
+    Print_Estimated_Polynomial_By_Ranking_After_Method(polys,occurrence,crc_width,False)
     generator_polys,useful_polys,useful_xor_in = Estimate_Xor_In_All_Possiblities(second_step_packets,polys,crc_width)
     Print_Estimated_Polynomials_And_Xor_In(generator_polys,useful_polys,useful_xor_in)
-    return first_step_packets,second_step_packets,polys,crc_width,generator_polys,useful_polys,useful_xor_in
+    combinations = Estimate_Xor_Out_All_Possiblities(first_step_packets,second_step_packets,generator_polys,useful_xor_in,crc_width)
+    Print_All_Possible_Xor_Outs(combinations)
+    Print_Estimated_Full_Estimated(combinations)
+    return first_step_packets,second_step_packets,polys,crc_width,generator_polys,useful_polys,useful_xor_in,combinations
     
 # %% Run main
 
 if __name__ == '__main__':
-    first_step_packets,second_step_packets,polys,crc_width,generator_polys,useful_polys,useful_xor_in = Main()
-    
+    Main()
     
