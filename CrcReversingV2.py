@@ -376,6 +376,28 @@ def Merge_By_Ranking_Polynomials(occurrence1,polys1,occurrence2,polys2):
         polys_unique[j] = int(polys_unique[j])
     return polys_unique,new_occurrences
 
+def Create_Valid_Unequal_Packet_Combinations(second_step_packets):
+    '''
+    Description:
+        Create a valid packet combinations to run the XorIn estimation algorithm 
+        on.
+    Inputs:
+        second_step_packets - list - a list of pacekts.
+    Outputs:
+        packet_combinations - list of lists of lists - a list of valid packet1
+        and packet2 combinations of unequal length.
+    '''
+    num_of_packets = len(second_step_packets)
+    packet_combinations = [];
+    for i in range(num_of_packets):
+        for j in range(num_of_packets):
+            packet1 = second_step_packets[i]; packet2 = second_step_packets[j];
+            if packet1 == packet2 or j<i:
+                continue
+            else:
+                packet_combinations.append([packet1,packet2])
+    return packet_combinations
+
 def Print_Estimated_Polynomials_And_Xor_In(generator_polys,useful_polys,useful_xor_in):
     '''
     Description:
@@ -1112,7 +1134,7 @@ def Estimate_Xor_In(packet1,packet2,poly,crc_width):
     matrix = Run_Relative_Shift_Matrix(packet1,packet2,poly,crc_width)
     _, xor_in = Gauss_Jordan_Elimination_In_GF_2(matrix,vector)
     xor_in = Turn_Numpy_Array_Of_Bits_To_Bitstring(xor_in,crc_width)
-    return int(xor_in,2)
+    return int(xor_in,2)    
 
 def Estimate_Xor_In_All_Possiblities(second_step_packets,polys,crc_width):
     '''
@@ -1130,19 +1152,14 @@ def Estimate_Xor_In_All_Possiblities(second_step_packets,polys,crc_width):
         xor_in value.
         useful_xor_in - list - a list of possible xor_in values.
     '''
-    num_of_packets = len(second_step_packets)
+    packet_combinations = Create_Valid_Unequal_Packet_Combinations(second_step_packets)
     generator_polys = []; useful_polys = []; useful_xor_in = [];
     for cur_poly in polys:
         possible_polys = Generate_All_Poly_Representations(cur_poly,crc_width,enb_combinations=True)
         for possible_poly in possible_polys:
             xor_in_ls = []
-            for i in range(num_of_packets):
-                for j in range(num_of_packets):
-                    packet1 = second_step_packets[i]; packet2 = second_step_packets[j];
-                    if packet1 == packet2 or j<i:
-                        continue
-                    else:
-                        xor_in_ls.append(Estimate_Xor_In(packet1,packet2,possible_poly,crc_width))
+            for combination in packet_combinations:
+                xor_in_ls.append(Estimate_Xor_In(combination[0],combination[1],possible_poly,crc_width))
             xor_in_unique,counts = np.unique(xor_in_ls, return_counts=True)
             if len(np.where(2<=counts)[0]) != 0:
                 generator_polys.append(cur_poly)
