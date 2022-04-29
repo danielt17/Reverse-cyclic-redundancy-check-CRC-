@@ -455,6 +455,22 @@ def Print_All_Possible_Xor_Outs(combinations):
         print('\n')
     print('\n\n\n\n\n')
 
+def Unique(ls):
+    '''
+    Description:
+        This function find unique elemnts in a list, created because numpy
+        unique functionality discards string when using unique.
+    Inputs:
+        ls - list - list to be uniqued.
+    Outputs:
+        unique_list - list - list of unique elements.
+    '''
+    unique_list = []
+    for x in ls:
+        if x not in unique_list:
+            unique_list.append(x)
+    return unique_list
+
 def Print_Estimated_Full_Estimated(combinations):
     '''
     Description:
@@ -903,50 +919,70 @@ def Packet_Transform_To_Message_Big_Endian_Crc_Little_Endian_Concatenate_Turn_To
     packet_int = Bytearray_To_Int(m + Int_To_Bytearray(r,'little'))
     return packet_int
 
-def Pre_Processing_Packets_Method_2(packet1,packet2,packet3):
+def Packet_Concatenate(packet):
+    '''
+    Description:
+        This function preprocesses a packet by concatanting the packet msg and
+        crc into a full message and than turning it to big endian int.
+    Inputs:
+        packet - list - a list containing msg and crc pair.
+    Outputs:
+        packet_int - int - the packets in int representation according to the method.
+    '''
+    m = packet[0]; r = packet[1]
+    packet_int = Bytearray_To_Int(m + r)
+    return packet_int
+    
+def Pre_Processing_Packets_Method_2(packet1,packet2,packet3,crc_family):
     '''
     Description:
         This function preprocesses three packets into appropraite usage in the
         function Polynomial_Recovery_Gcd_Method.
     Inputs:
         packet1, packet2, packet3 - lists - are lists containing msg and crc pairs.
+        crc_family - int - what type of preprocessing should be done.
     Outputs:
         packet1_int,packet2_int,packet3_int - ints - the packets in int representation
         according to the preprocessing method.
     '''
-    packet1_int = Packet_Transform_To_Message_Big_Endian_Crc_Little_Endian_Concatenate_Turn_To_Int_Big_Endian(packet1)
-    packet2_int = Packet_Transform_To_Message_Big_Endian_Crc_Little_Endian_Concatenate_Turn_To_Int_Big_Endian(packet2)
-    packet3_int = Packet_Transform_To_Message_Big_Endian_Crc_Little_Endian_Concatenate_Turn_To_Int_Big_Endian(packet3)
+    if crc_family == 0:
+        packet1_int = Packet_Transform_To_Message_Big_Endian_Crc_Little_Endian_Concatenate_Turn_To_Int_Big_Endian(packet1)
+        packet2_int = Packet_Transform_To_Message_Big_Endian_Crc_Little_Endian_Concatenate_Turn_To_Int_Big_Endian(packet2)
+        packet3_int = Packet_Transform_To_Message_Big_Endian_Crc_Little_Endian_Concatenate_Turn_To_Int_Big_Endian(packet3)
+    elif crc_family == 1:
+        packet1_int = Packet_Concatenate(packet1)
+        packet2_int = Packet_Concatenate(packet2)
+        packet3_int = Packet_Concatenate(packet3)
     return packet1_int,packet2_int,packet3_int
 
-def Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int):
+def Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int,crc_family):
     '''
     Description:
         This function does polynomial recovery from using the GCD from 3 pakcets.
     Inputs:
-        packet1_int,packet2_int,packet3_int - ints - packet represenation in int
-        the input should be created such that it is equalivent to the following form:
-            1. m (message) in big endian byte array representation.
-            2. crc in little endian byte array representation.
-            3. concatenate m + crc into one byte array
-            4. turn to int in big endian.
+        packet1_int,packet2_int,packet3_int - ints - with appropriate representation.
+        crc_family - int - what type of preprocessing should be done.
     Outputs:
         poly - int - return estimated polynomial (0 for not estimated).
     '''
-    endian = 'little'
-    packet1 = packet1_int.to_bytes(ceil(packet1_int.bit_length()/8),endian)
-    packet2 = packet2_int.to_bytes(ceil(packet2_int.bit_length()/8),endian)
-    packet3 = packet3_int.to_bytes(ceil(packet3_int.bit_length()/8),endian)
-    homogenous_packet1 = bin(Bytearray_To_Int(Byte_Xor(packet1,packet2)))[2:][::-1]
-    homogenous_packet2 = bin(Bytearray_To_Int(Byte_Xor(packet1,packet3)))[2:][::-1]
-    homogenous_packet1 = Remove_Zeros_From_Binary_String(homogenous_packet1)
-    homogenous_packet2 = Remove_Zeros_From_Binary_String(homogenous_packet2)
-    try:
-        homogenous_packet1 = int(homogenous_packet1,2); homogenous_packet2 = int(homogenous_packet2,2)
-    except:
-        print("There's a sequence where the same packet happenss twice, not using it.")
-        poly = 0 
-        return poly
+    if crc_family == 0:
+        endian = 'little'
+        packet1 = packet1_int.to_bytes(ceil(packet1_int.bit_length()/8),endian)
+        packet2 = packet2_int.to_bytes(ceil(packet2_int.bit_length()/8),endian)
+        packet3 = packet3_int.to_bytes(ceil(packet3_int.bit_length()/8),endian)
+        homogenous_packet1 = bin(Bytearray_To_Int(Byte_Xor(packet1,packet2)))[2:][::-1]
+        homogenous_packet2 = bin(Bytearray_To_Int(Byte_Xor(packet1,packet3)))[2:][::-1]
+        homogenous_packet1 = Remove_Zeros_From_Binary_String(homogenous_packet1)
+        homogenous_packet2 = Remove_Zeros_From_Binary_String(homogenous_packet2)
+        try:
+            homogenous_packet1 = int(homogenous_packet1,2); homogenous_packet2 = int(homogenous_packet2,2)
+        except:
+            print("There's a sequence where the same packet happenss twice, not using it.")
+            poly = 0 
+            return poly
+    elif crc_family == 1:
+        homogenous_packet1 = packet1_int^packet2_int
+        homogenous_packet2 = packet1_int^packet3_int
     poly = Poly_GCD(homogenous_packet2, homogenous_packet1)
     try:
         poly = int(hex(poly)[3:],16)
@@ -973,12 +1009,14 @@ def Estimate_Poly_Over_All_Packets_Method_2(first_step_packets,crc_width):
     print('\n')
     polys = []
     amount_of_triplets = len(first_step_packets)-2
+    crc_families = [0,1];
     for i in range(amount_of_triplets):
-        packet1_int,packet2_int,packet3_int = Pre_Processing_Packets_Method_2(first_step_packets[i],first_step_packets[i+1],first_step_packets[i+2])
-        poly = Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int)
-        if poly >= 2**(crc_width):
-            continue
-        polys.append(poly)
+        for crc_family in crc_families:
+            packet1_int,packet2_int,packet3_int = Pre_Processing_Packets_Method_2(first_step_packets[i],first_step_packets[i+1],first_step_packets[i+2],crc_family)
+            poly = Polynomial_Recovery_Gcd_Method(packet1_int,packet2_int,packet3_int,crc_family)
+            if poly >= 2**(crc_width):
+                continue
+            polys.append(poly)
     polys_best,occurrence = Ranking_Estimated_Polynomial(polys)
     return polys_best,occurrence
     
@@ -1222,6 +1260,7 @@ def Estimate_Xor_Out_All_Possiblities(first_step_packets,second_step_packets,gen
                         xor_outs.append(xor_out)
                     if len(xor_outs) == np.unique(xor_outs,return_counts=True)[1][0]:
                         combinations.append([poly,crc_width,xor_in,ref_in,ref_out,xor_out])
+    combinations = Unique(combinations)
     return combinations
 
 # %% Main function
@@ -1247,4 +1286,28 @@ def Main():
 
 if __name__ == '__main__':
     Main()
+    # logger = Logger_Object()
+    # packets,crc_width = Start_Program(logger)
+    # first_step_packets,second_step_packets = Preprocessing(packets,crc_width)
+    # m1 = first_step_packets[0][0]; r1 = first_step_packets[0][1];
+    # m2 = first_step_packets[1][0]; r2 = first_step_packets[1][1];
+    # m3 = first_step_packets[2][0]; r3 = first_step_packets[2][1];
+    # packet_int1 = Bytearray_To_Int(m1 + r1);
+    # packet_int2 = Bytearray_To_Int(m2 + r2);
+    # packet_int3 = Bytearray_To_Int(m3 + r3);
     
+    # homogenous_packet1 = packet_int1^packet_int2
+    # homogenous_packet2 = packet_int1^packet_int3
+    
+    # endian = 'little'
+    # packet1 = packet1_int.to_bytes(ceil(packet1_int.bit_length()/8),endian)
+    # packet2 = packet2_int.to_bytes(ceil(packet2_int.bit_length()/8),endian)
+    # packet3 = packet3_int.to_bytes(ceil(packet3_int.bit_length()/8),endian)
+    # homogenous_packet1 = bin(Bytearray_To_Int(Byte_Xor(packet1,packet2)))[2:][::-1]
+    # homogenous_packet2 = bin(Bytearray_To_Int(Byte_Xor(packet1,packet3)))[2:][::-1]
+    # homogenous_packet1 = Remove_Zeros_From_Binary_String(homogenous_packet1)
+    # homogenous_packet2 = Remove_Zeros_From_Binary_String(homogenous_packet2)
+    
+    # homogenous_packet1 = int(homogenous_packet1,2); homogenous_packet2 = int(homogenous_packet2,2)
+    # poly = Poly_GCD(homogenous_packet2, homogenous_packet1)
+    # print(f"\nEstimated polynomial: {hex(poly)}")
