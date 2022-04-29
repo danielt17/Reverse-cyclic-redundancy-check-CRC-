@@ -307,7 +307,7 @@ def Ranking_Estimated_Polynomial(polys):
         occurrence - list - the probability (in this case percentage) of a polynomial
         to be the correct polynomial according to the algorithm.
     '''
-    polys = np.asarray(polys,np.int64)
+    polys = np.asarray(polys,dtype = object)
     polys = polys[polys != 0]
     values, counts = np.unique(polys, return_counts=True)
     for i in reversed(range(3)):
@@ -1105,7 +1105,7 @@ def Run_Relative_Shift_Matrix(packet1,packet2,poly,crc_width):
     matrix = Build_Relative_Shift_Matrix(packet1_len,packet2_len,poly,crc_width)
     return matrix
 
-def Create_Target_Vector(packet1,packet2,poly,crc_width):
+def Create_Target_Vector(packet1,packet2,poly,crc_width,crc_family):
     '''
     Description:
         This function creates the target vector which will be used to solve
@@ -1114,13 +1114,18 @@ def Create_Target_Vector(packet1,packet2,poly,crc_width):
         packet1,packet2 - lists - lists where the first entry is the message 
         and the second is the crc.
         poly - int - estimated crc polynomial in intger representation.
-        crc_width - int - the crc polynomial width
+        crc_width - int - the crc polynomial width.
+        crc_family - int - what type of preprocessing should be done.
     Outputs:
         target_vector - numpy array - the target vector in GF(2).
     '''
-    endian1 = 'little'; endian2 = 'little'
-    packet1_int =  Bytearray_To_Int(packet1[0] + Int_To_Bytearray(Bytearray_To_Int(packet1[1]),endian1),endian2)
-    packet2_int =  Bytearray_To_Int(packet2[0] + Int_To_Bytearray(Bytearray_To_Int(packet2[1]),endian1),endian2)
+    if crc_family == 0:
+        endian1 = 'little'; endian2 = 'little'
+        packet1_int =  Bytearray_To_Int(packet1[0] + Int_To_Bytearray(Bytearray_To_Int(packet1[1]),endian1),endian2)
+        packet2_int =  Bytearray_To_Int(packet2[0] + Int_To_Bytearray(Bytearray_To_Int(packet2[1]),endian1),endian2)
+    elif crc_family == 1:
+        packet1_int = Packet_Concatenate(packet1)
+        packet2_int = Packet_Concatenate(packet2)
     packet_diff = packet1_int ^ packet2_int
     target_vector = Poly_Mod(packet_diff,poly)
     target_vector = bin(target_vector)[2:]
@@ -1155,7 +1160,7 @@ def Gauss_Jordan_Elimination_In_GF_2(matrix_original,vector_original):
         i += 1; j +=1
     return matrix[:,:-1],matrix[:,-1]    
 
-def Estimate_Xor_In(packet1,packet2,poly,crc_width):
+def Estimate_Xor_In(packet1,packet2,poly,crc_width,crc_family):
     '''
     Description:
         This function takes two packets of unequal length and a polynomial, and
@@ -1164,11 +1169,12 @@ def Estimate_Xor_In(packet1,packet2,poly,crc_width):
         packet1,packet2 - lists - lists where the first entry is the message 
         and the second is the crc.
         poly - int - estimated crc polynomial in intger representation.
-        crc_width - int - the crc polynomial width
+        crc_width - int - the crc polynomial width.
+        crc_family - int - what type of preprocessing should be done.
     Outputs:
         xor_in - binary string - estimated xor_in binary string.
     '''
-    vector = Create_Target_Vector(packet1,packet2,poly,crc_width)
+    vector = Create_Target_Vector(packet1,packet2,poly,crc_width,crc_family)
     matrix = Run_Relative_Shift_Matrix(packet1,packet2,poly,crc_width)
     _, xor_in = Gauss_Jordan_Elimination_In_GF_2(matrix,vector)
     xor_in = Turn_Numpy_Array_Of_Bits_To_Bitstring(xor_in,crc_width)
@@ -1191,18 +1197,20 @@ def Estimate_Xor_In_All_Possiblities(second_step_packets,polys,crc_width):
         useful_xor_in - list - a list of possible xor_in values.
     '''
     packet_combinations = Create_Valid_Unequal_Packet_Combinations(second_step_packets)
+    crc_families = [0,1]
     generator_polys = []; useful_polys = []; useful_xor_in = [];
     for cur_poly in polys:
         possible_polys = Generate_All_Poly_Representations(cur_poly,crc_width,enb_combinations=True)
         for possible_poly in possible_polys:
             xor_in_ls = []
-            for combination in packet_combinations:
-                xor_in_ls.append(Estimate_Xor_In(combination[0],combination[1],possible_poly,crc_width))
-            xor_in_unique,counts = np.unique(xor_in_ls, return_counts=True)
-            if len(np.where(2<=counts)[0]) != 0:
-                generator_polys.append(cur_poly)
-                useful_polys.append(possible_poly)
-                useful_xor_in.append(list(xor_in_unique))
+            for crc_family in crc_families:
+                for combination in packet_combinations:
+                    xor_in_ls.append(Estimate_Xor_In(combination[0],combination[1],possible_poly,crc_width,crc_family))
+                xor_in_unique,counts = np.unique(xor_in_ls, return_counts=True)
+                if len(np.where(2<=counts)[0]) != 0:
+                    generator_polys.append(cur_poly)
+                    useful_polys.append(possible_poly)
+                    useful_xor_in.append(list(xor_in_unique))
     return generator_polys,useful_polys,useful_xor_in
 
 # %% Reversing CRC - Part 3 - Estimating XorOut 
@@ -1286,28 +1294,3 @@ def Main():
 
 if __name__ == '__main__':
     Main()
-    # logger = Logger_Object()
-    # packets,crc_width = Start_Program(logger)
-    # first_step_packets,second_step_packets = Preprocessing(packets,crc_width)
-    # m1 = first_step_packets[0][0]; r1 = first_step_packets[0][1];
-    # m2 = first_step_packets[1][0]; r2 = first_step_packets[1][1];
-    # m3 = first_step_packets[2][0]; r3 = first_step_packets[2][1];
-    # packet_int1 = Bytearray_To_Int(m1 + r1);
-    # packet_int2 = Bytearray_To_Int(m2 + r2);
-    # packet_int3 = Bytearray_To_Int(m3 + r3);
-    
-    # homogenous_packet1 = packet_int1^packet_int2
-    # homogenous_packet2 = packet_int1^packet_int3
-    
-    # endian = 'little'
-    # packet1 = packet1_int.to_bytes(ceil(packet1_int.bit_length()/8),endian)
-    # packet2 = packet2_int.to_bytes(ceil(packet2_int.bit_length()/8),endian)
-    # packet3 = packet3_int.to_bytes(ceil(packet3_int.bit_length()/8),endian)
-    # homogenous_packet1 = bin(Bytearray_To_Int(Byte_Xor(packet1,packet2)))[2:][::-1]
-    # homogenous_packet2 = bin(Bytearray_To_Int(Byte_Xor(packet1,packet3)))[2:][::-1]
-    # homogenous_packet1 = Remove_Zeros_From_Binary_String(homogenous_packet1)
-    # homogenous_packet2 = Remove_Zeros_From_Binary_String(homogenous_packet2)
-    
-    # homogenous_packet1 = int(homogenous_packet1,2); homogenous_packet2 = int(homogenous_packet2,2)
-    # poly = Poly_GCD(homogenous_packet2, homogenous_packet1)
-    # print(f"\nEstimated polynomial: {hex(poly)}")
