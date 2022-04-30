@@ -422,7 +422,7 @@ def Print_Estimated_Polynomials_And_Xor_In(generator_polys,useful_polys,useful_x
     for i in range(n):
         ls_temp = []
         for j in range(len(useful_xor_in[i])):
-            ls_temp.append(hex(useful_xor_in[i][j]))
+            ls_temp.append(hex(int(useful_xor_in[i][j])))
         useful_xor_in_hex.append(ls_temp)
     for i in range(n):
         print('Generator polynomial (taps): ' + hex(generator_polys[i]))
@@ -1176,7 +1176,9 @@ def Estimate_Xor_In(packet1,packet2,poly,crc_width,crc_family):
     '''
     vector = Create_Target_Vector(packet1,packet2,poly,crc_width,crc_family)
     matrix = Run_Relative_Shift_Matrix(packet1,packet2,poly,crc_width)
-    _, xor_in = Gauss_Jordan_Elimination_In_GF_2(matrix,vector)
+    mat, xor_in = Gauss_Jordan_Elimination_In_GF_2(matrix,vector)
+    if np.sum(mat) == 0 and np.sum(xor_in) == 0:
+        xor_in = np.array([1]*crc_width,dtype = np.uint8)
     xor_in = Turn_Numpy_Array_Of_Bits_To_Bitstring(xor_in,crc_width)
     return int(xor_in,2)    
 
@@ -1289,8 +1291,41 @@ def Main():
     Print_All_Possible_Xor_Outs(combinations)
     Print_Estimated_Full_Estimated(combinations)
     return first_step_packets,second_step_packets,polys,crc_width,generator_polys,useful_polys,useful_xor_in,combinations
-    
+
+
+
 # %% Run main
+
+'''
+This is a list of CRC algorithms which we can't estimate currently correctly or
+fully, and what is the problem:
+    1. crc8-ccitt - polynomial estimation is wrong, we need to get 0x7, and currently
+    dont much, maybe I need to add an option, for polynomial while removing zeros at the end
+    of the polynomial which aren't useful.
+    2. crc15-can currenly the algorithm can only work for powers of 4 as this 
+    is the hexadecimal size of bytearray.
+    3. crc16-autosar - polynomial estimated correctly while XorIn not, might
+    be connected to not taking into account all possible solutions of the matrix
+    equation.
+    4. crc16-ccitt-falses - same as in 3.
+    5. crc16-cdma2000 - polynomial and XorIn estimated correctly, failed at XorOut.
+    6. crc24-flexray16-a - same as in 3.
+    7. crc24-flexray16-b - same as in 3.
+    8. crc24-ble - same as in 3.
+    9. crc24-interlaken - bad polynomial estimation reason unknown.
+    10. crc24-openpgp - same as in 3.
+    11. crc24-os-9- same as in 3.
+    12. crc32-c same as in 3.
+    13. crc32-mef same as in 3.
+    14. crc64-ecma - it seems like some problem with how big the number is because
+    the last 4 numbers are wrong.
+    15. crc64-ms - some problem with the XorIn method because polynomial is correct.
+    16. crc64-we - same as in 15.
+    17. crc64-xz - same as 14.
+    
+    Finally out of 38 CRCs only 17 cant be estimated currently, so 21 CRCs work. 
+    One can put the problems into 6 categories which should addressed.
+'''
 
 if __name__ == '__main__':
     Main()
