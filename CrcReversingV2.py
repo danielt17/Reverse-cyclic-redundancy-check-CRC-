@@ -496,7 +496,7 @@ def Print_Estimated_Full_Estimated(combinations):
         combinations - list of lists - list of lists of possible estimated parameters.
     Outputs:
         None. Print crcengine like description of the estimated CRC.
-    '''
+    ''' 
     print('\n\n\n\n\n\n\n\n\n')
     print('-----------------------------------------------')
     print('Results of CRC reverse engneering algorithm:')
@@ -1282,8 +1282,14 @@ def Estimate_Xor_Out_All_Possiblities(first_step_packets,second_step_packets,gen
     ref_ins = [True,False]; ref_outs = [True,False];
     packets = first_step_packets + second_step_packets
     combinations = [];
+    threshold = 2 # maximum number of packets which can have a different XorOut value.
     for i in range(len(generator_polys)):
-        poly = int(generator_polys[i])
+        poly_bin = bin(int(generator_polys[i]))[2:]
+        poly_length = len(poly_bin)
+        if poly_length > crc_width:
+            poly = int(poly_bin[poly_length-crc_width:],2)
+        else:
+            poly = int(generator_polys[i])
         possible_xor_in = useful_xor_in[i]
         for xor_in in possible_xor_in:
             for ref_in in ref_ins:
@@ -1292,7 +1298,7 @@ def Estimate_Xor_Out_All_Possiblities(first_step_packets,second_step_packets,gen
                     for packet in packets:
                         xor_out = Estimate_Xor_Out(packet,poly,crc_width,int(xor_in),ref_in,ref_out)
                         xor_outs.append(xor_out)
-                    if len(xor_outs) == np.unique(xor_outs,return_counts=True)[1][0]:
+                    if len(xor_outs) <= np.unique(xor_outs,return_counts=True)[1][0] + threshold:
                         combinations.append([poly,crc_width,int(xor_in),ref_in,ref_out,xor_out])
     combinations = Unique(combinations)
     return combinations
@@ -1313,7 +1319,7 @@ def Main():
     Print_Estimated_Polynomials_And_Xor_In(generator_polys,useful_polys,useful_xor_in)
     combinations1 = Estimate_Xor_Out_All_Possiblities(first_step_packets,second_step_packets,generator_polys,useful_xor_in,crc_width)
     combinations2 = Estimate_Xor_Out_All_Possiblities(first_step_packets,second_step_packets,useful_polys,useful_xor_in,crc_width)
-    combinations = combinations1 + combinations2
+    combinations = Unique(combinations1 + combinations2)
     Print_All_Possible_Xor_Outs(combinations)
     Print_Estimated_Full_Estimated(combinations)
     return first_step_packets,second_step_packets,polys,crc_width,generator_polys,useful_polys,useful_xor_in,combinations
@@ -1330,21 +1336,20 @@ fully, and what is the problem:
     2. crc16-autosar - polynomial estimated correctly while XorIn not, might
     be connected to not taking into account all possible solutions of the matrix
     equation.
-    3. crc16-ccitt-false - same as in 3.
-    4. crc16-cdma2000 - polynomial and XorIn estimated correctly, failed at XorOut.
-    5. crc24-flexray16-a - same as in 3.
-    6. crc24-flexray16-b - same as in 3.
-    7. crc24-ble - same as in 3.
-    8. crc24-interlaken - bad polynomial estimation reason unknown.
-    9. crc24-openpgp - same as in 3.
-    10. crc24-os-9- same as in 3.
-    11. crc32-c same as in 3.
-    12. crc32-mef same as in 3.
-    13. crc64-ms - some problem with the XorIn method because polynomial is correct.
-    14. crc64-we - same as in 3.
-    15. crc64-xz - same as 3.
+    3. crc16-ccitt-false - same as in 2.
+    4. crc24-flexray16-a - same as in 2.
+    5. crc24-flexray16-b - same as in 2.
+    6. crc24-ble - same as in 2.
+    7. crc24-interlaken - bad polynomial estimation reason unknown.
+    8. crc24-openpgp - same as in 2.
+    9. crc24-os-9- same as in 2.
+    10. crc32-c same as in 2.
+    11. crc32-mef same as in 2.
+    12. crc64-ms - some problem with the XorIn method because polynomial is correct.
+    13. crc64-we - same as in 2.
+    14. crc64-xz - same as 2.
     
-    Finally out of 38 CRCs only 15 cant be estimated currently, so 23 CRCs work. 
+    Finally out of 38 CRCs only 14 cant be estimated currently, so 24 CRCs work. 
     One can put the problems into 4 categories which should addressed.
 '''
 
