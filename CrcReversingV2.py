@@ -370,21 +370,20 @@ def Merge_By_Ranking_Polynomials(occurrence1,polys1,occurrence2,polys2):
     occurrences = occurrences/np.sum(occurrences)*100
     ranking = np.argsort(occurrences)
     occurrences = list(occurrences[ranking])[::-1]
-    polys = np.array(list(polys1) + list(polys2))
-    polys = list(polys[ranking])[::-1];
-    polys_unique,_ = np.unique(polys,return_index=True) # return indexes is enabled to make sure the algorithm does merge sort and not quick sort (changing positions altough ordered)
+    polys = list(polys1) + list(polys2)
+    polys = [x for _,x in sorted(zip(list(ranking),polys))][::-1]
+    polys_unique = Unique(polys)
     new_occurrences = [];
     for cur_poly in polys_unique:
-        indcies = np.where(cur_poly == polys)[0]
+        indcies = np.where(cur_poly == np.array(polys))[0]
         temp_occurrence = 0
         for i in indcies:
             temp_occurrence += occurrences[i]
         new_occurrences.append(temp_occurrence)
     new_occurrences = np.array(new_occurrences);  ranking_new = np.argsort(new_occurrences)
-    new_occurrences = new_occurrences[ranking_new][::-1]; polys_unique = polys_unique[ranking_new][::-1]
-    polys_unique = list(polys_unique); new_occurrences = list(new_occurrences)
-    for j in range(len(polys_unique)):
-        polys_unique[j] = int(polys_unique[j])
+    new_occurrences = new_occurrences[ranking_new][::-1]; 
+    polys_unique = [x for _,x in sorted(zip(list(ranking_new),polys_unique))][::-1]
+    new_occurrences = list(new_occurrences)
     return polys_unique,new_occurrences
 
 def Create_Valid_Unequal_Packet_Combinations(second_step_packets):
@@ -454,17 +453,24 @@ def Print_All_Possible_Xor_Outs(combinations):
         None. Prints a combination of the generator polynomial, XorIn, and
         XorOut.
     '''
-    print('\n\n')
-    print('----------------------------------')
-    print('Estimated XorOut combinations:')
-    print('----------------------------------')
-    print('\n\n')
-    for i in range(len(combinations)):
-        print('Generator polynomial (taps): ' + hex(combinations[i][0]))
-        print('Estimated XorIn (seed):      ' + hex(combinations[i][2]))
-        print('Estimated XorOut (Mask/Final):     ' + hex(combinations[i][5]))
-        print('\n')
-    print('\n\n\n\n\n')
+    if len(combinations) == 0:
+        print('\n\n')
+        print('--------------------------------------------------------------')
+        print('XorOut estimation algorithm failed! no matching combinations')
+        print('--------------------------------------------------------------')
+        print('\n\n')
+    else:
+        print('\n\n')
+        print('----------------------------------')
+        print('Estimated XorOut combinations:')
+        print('----------------------------------')
+        print('\n\n')
+        for i in range(len(combinations)):
+            print('Generator polynomial (taps): ' + hex(combinations[i][0]))
+            print('Estimated XorIn (seed):      ' + hex(combinations[i][2]))
+            print('Estimated XorOut (Mask/Final):     ' + hex(combinations[i][5]))
+            print('\n')
+        print('\n\n\n\n\n')
 
 def Unique(ls):
     '''
@@ -495,17 +501,24 @@ def Print_Estimated_Full_Estimated(combinations):
     print('-----------------------------------------------')
     print('Results of CRC reverse engneering algorithm:')
     print('-----------------------------------------------')
-    for i in range(len(combinations)):
+    if len(combinations) == 0:
         print('\n')
         print('-----------------------------------------------')
-        print('poly:        ' + hex(combinations[i][0]))
-        print('width:       ' + str(combinations[i][1]))
-        print('seed:        ' + hex(combinations[i][2]))
-        print('ref_in:      ' + str(combinations[i][3]))
-        print('ref_out:     ' + str(combinations[i][4]))
-        print('xor_out:     ' + hex(combinations[i][5]))
+        print('CRC reversing algorithm failed!')
         print('-----------------------------------------------')
-    print('\n\n\n\n\n\n\n\n')
+        print('\n\n\n\n\n\n\n\n')
+    else:
+        for i in range(len(combinations)):
+            print('\n')
+            print('-----------------------------------------------')
+            print('poly:        ' + hex(combinations[i][0]))
+            print('width:       ' + str(combinations[i][1]))
+            print('seed:        ' + hex(combinations[i][2]))
+            print('ref_in:      ' + str(combinations[i][3]))
+            print('ref_out:     ' + str(combinations[i][4]))
+            print('xor_out:     ' + hex(combinations[i][5]))
+            print('-----------------------------------------------')
+        print('\n\n\n\n\n\n\n\n')
 
 # %% User interaction functions
 
@@ -1280,7 +1293,7 @@ def Estimate_Xor_Out_All_Possiblities(first_step_packets,second_step_packets,gen
                         xor_out = Estimate_Xor_Out(packet,poly,crc_width,int(xor_in),ref_in,ref_out)
                         xor_outs.append(xor_out)
                     if len(xor_outs) == np.unique(xor_outs,return_counts=True)[1][0]:
-                        combinations.append([poly,crc_width,xor_in,ref_in,ref_out,xor_out])
+                        combinations.append([poly,crc_width,int(xor_in),ref_in,ref_out,xor_out])
     combinations = Unique(combinations)
     return combinations
 
@@ -1317,7 +1330,7 @@ fully, and what is the problem:
     2. crc16-autosar - polynomial estimated correctly while XorIn not, might
     be connected to not taking into account all possible solutions of the matrix
     equation.
-    3. crc16-ccitt-falses - same as in 3.
+    3. crc16-ccitt-false - same as in 3.
     4. crc16-cdma2000 - polynomial and XorIn estimated correctly, failed at XorOut.
     5. crc24-flexray16-a - same as in 3.
     6. crc24-flexray16-b - same as in 3.
@@ -1327,14 +1340,12 @@ fully, and what is the problem:
     10. crc24-os-9- same as in 3.
     11. crc32-c same as in 3.
     12. crc32-mef same as in 3.
-    13. crc64-ecma - it seems like some problem with how big the number is because
-    the last 4 numbers are wrong.
-    14. crc64-ms - some problem with the XorIn method because polynomial is correct.
-    15. crc64-we - same as in 14.
-    16. crc64-xz - same as 13.
+    13. crc64-ms - some problem with the XorIn method because polynomial is correct.
+    14. crc64-we - same as in 3.
+    15. crc64-xz - same as 3.
     
-    Finally out of 38 CRCs only 16 cant be estimated currently, so 22 CRCs work. 
-    One can put the problems into 5 categories which should addressed.
+    Finally out of 38 CRCs only 15 cant be estimated currently, so 23 CRCs work. 
+    One can put the problems into 4 categories which should addressed.
 '''
 
 if __name__ == '__main__':
