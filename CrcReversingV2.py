@@ -1332,7 +1332,7 @@ def Main():
 This is a list of CRC algorithms which we can't estimate currently correctly or
 fully, and what is the problem:
     1. crc15-can currenly the algorithm can only work for powers of 4 as this 
-    is the hexadecimal size of bytearray. Actually the prolbem is the packets have GCD = 3
+    is the hexadecimal size of bytearray. Actually the prolbem is the packets have GCD = 3.
     2. crc16-autosar - polynomial estimated correctly while XorIn not, might
     be connected to not taking into account all possible solutions of the matrix
     equation.
@@ -1340,17 +1340,19 @@ fully, and what is the problem:
     4. crc24-flexray16-a - same as in 2.
     5. crc24-flexray16-b - same as in 2.
     6. crc24-ble - same as in 2.
-    7. crc24-interlaken - bad polynomial estimation reason unknown.
-    8. crc24-openpgp - same as in 2.
-    9. crc24-os-9- same as in 2.
-    10. crc32-c same as in 2.
-    11. crc32-mef same as in 2.
-    12. crc64-ms - some problem with the XorIn method because polynomial is correct.
-    13. crc64-we - same as in 2.
-    14. crc64-xz - same as 2.
+    7. crc24-openpgp - same as in 2.
+    8. crc24-os-9- same as in 2.
+    9. crc32-c same as in 2.
+    10. crc32-mef same as in 2.
+    11. crc64-ms - same as in 2.
+    12. crc64-we - same as in 2.
+    13. crc64-xz - same as in 2.
     
-    Finally out of 38 CRCs only 14 cant be estimated currently, so 24 CRCs work. 
-    One can put the problems into 4 categories which should addressed.
+    
+    ####### crc24-interlaken - failes for one packet choice but not the other, so its fine.
+    
+    Finally out of 38 CRCs only 13 cant be estimated currently, so 25 CRCs work. 
+    One can put the problems into 2 categories which should addressed.
 '''
 
 if __name__ == '__main__':
