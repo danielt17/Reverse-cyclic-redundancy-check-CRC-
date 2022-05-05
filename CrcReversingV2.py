@@ -263,10 +263,21 @@ def Generate_All_Poly_Representations(poly,crc_width,enb_combinations=False):
         ls = [poly,estimated_reverse_poly,estimated_poly_recipolar,estimated_poly_recipolar_reverese,estimated_reverse_poly_recipolar,estimated_reverse_poly_recipolar_reverese]
         polys = []
         for cur_poly in ls:
-            for i in range(3):
+            for i in range(4):
                 if i == 0:      polys.append(cur_poly)
                 elif i == 1:    polys.append(cur_poly+1)
                 elif i == 2:    polys.append(cur_poly+2**(crc_width))
+                elif i == 3:
+                    counter = 0;
+                    hex_cur_poly = hex(cur_poly)[2:]
+                    for j in reversed(hex_cur_poly):
+                        if j == '0':
+                            counter += 1
+                        else:
+                            break;
+                    if counter != 0:
+                        polys.append(int(hex_cur_poly[:-counter],16))
+                        
         return polys
     else:
         return estimated_reverse_poly,estimated_poly_recipolar,estimated_poly_recipolar_reverese,estimated_reverse_poly_recipolar,estimated_reverse_poly_recipolar_reverese
@@ -1287,7 +1298,9 @@ def Main():
     Print_Estimated_Polynomial_By_Ranking_After_Method(polys,occurrence,crc_width,False)
     generator_polys,useful_polys,useful_xor_in = Estimate_Xor_In_All_Possiblities(second_step_packets,polys,crc_width)
     Print_Estimated_Polynomials_And_Xor_In(generator_polys,useful_polys,useful_xor_in)
-    combinations = Estimate_Xor_Out_All_Possiblities(first_step_packets,second_step_packets,generator_polys,useful_xor_in,crc_width)
+    combinations1 = Estimate_Xor_Out_All_Possiblities(first_step_packets,second_step_packets,generator_polys,useful_xor_in,crc_width)
+    combinations2 = Estimate_Xor_Out_All_Possiblities(first_step_packets,second_step_packets,useful_polys,useful_xor_in,crc_width)
+    combinations = combinations1 + combinations2
     Print_All_Possible_Xor_Outs(combinations)
     Print_Estimated_Full_Estimated(combinations)
     return first_step_packets,second_step_packets,polys,crc_width,generator_polys,useful_polys,useful_xor_in,combinations
@@ -1299,32 +1312,29 @@ def Main():
 '''
 This is a list of CRC algorithms which we can't estimate currently correctly or
 fully, and what is the problem:
-    1. crc8-ccitt - polynomial estimation is wrong, we need to get 0x7, and currently
-    dont much, maybe I need to add an option, for polynomial while removing zeros at the end
-    of the polynomial which aren't useful.
-    2. crc15-can currenly the algorithm can only work for powers of 4 as this 
-    is the hexadecimal size of bytearray.
-    3. crc16-autosar - polynomial estimated correctly while XorIn not, might
+    1. crc15-can currenly the algorithm can only work for powers of 4 as this 
+    is the hexadecimal size of bytearray. Actually the prolbem is the packets have GCD = 3
+    2. crc16-autosar - polynomial estimated correctly while XorIn not, might
     be connected to not taking into account all possible solutions of the matrix
     equation.
-    4. crc16-ccitt-falses - same as in 3.
-    5. crc16-cdma2000 - polynomial and XorIn estimated correctly, failed at XorOut.
-    6. crc24-flexray16-a - same as in 3.
-    7. crc24-flexray16-b - same as in 3.
-    8. crc24-ble - same as in 3.
-    9. crc24-interlaken - bad polynomial estimation reason unknown.
-    10. crc24-openpgp - same as in 3.
-    11. crc24-os-9- same as in 3.
-    12. crc32-c same as in 3.
-    13. crc32-mef same as in 3.
-    14. crc64-ecma - it seems like some problem with how big the number is because
+    3. crc16-ccitt-falses - same as in 3.
+    4. crc16-cdma2000 - polynomial and XorIn estimated correctly, failed at XorOut.
+    5. crc24-flexray16-a - same as in 3.
+    6. crc24-flexray16-b - same as in 3.
+    7. crc24-ble - same as in 3.
+    8. crc24-interlaken - bad polynomial estimation reason unknown.
+    9. crc24-openpgp - same as in 3.
+    10. crc24-os-9- same as in 3.
+    11. crc32-c same as in 3.
+    12. crc32-mef same as in 3.
+    13. crc64-ecma - it seems like some problem with how big the number is because
     the last 4 numbers are wrong.
-    15. crc64-ms - some problem with the XorIn method because polynomial is correct.
-    16. crc64-we - same as in 15.
-    17. crc64-xz - same as 14.
+    14. crc64-ms - some problem with the XorIn method because polynomial is correct.
+    15. crc64-we - same as in 14.
+    16. crc64-xz - same as 13.
     
-    Finally out of 38 CRCs only 17 cant be estimated currently, so 21 CRCs work. 
-    One can put the problems into 6 categories which should addressed.
+    Finally out of 38 CRCs only 16 cant be estimated currently, so 22 CRCs work. 
+    One can put the problems into 5 categories which should addressed.
 '''
 
 if __name__ == '__main__':
