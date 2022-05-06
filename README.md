@@ -47,6 +47,10 @@ There are two modes of running the tool: example mode, by choosing some known CR
 To enter example mode press 1, for user mode press 2.
 ```
 
+#### Example mode:
+
+Lets say we choose example mode by entering 1. we are now asked to choose out of a list of CRCs a CRC to reverse, the packets will be pregenerated.
+
 #### User mode:
 
 
