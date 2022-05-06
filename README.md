@@ -15,7 +15,7 @@ CRC reverse engneering is public tool to reverse engineer a CRC code parameters.
 This program was written inorder to migrate CRC-REVENG to python, as being written in C makes it a lot harder to understand and to extended.
 
 
-## README structre:
+## README structure:
 
 I will be going over the following topics:
 
