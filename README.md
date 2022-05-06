@@ -131,3 +131,41 @@ Enter packets of equal length, optimal packets should have only one field changi
 Enter you packet in hexadecimal:
 ```
 
+After inputting all of the packets, of equal and unequal length as requested by the program we will get the following:
+
+```
+When enetering packets start with the data, and than concatenate the crc.
+
+Enter packets of equal length, optimal packets should have only one field changing, look at packets where only sequence number changes.
+
+Enter you packet in hexadecimal: aaaa9a7d00011b6078e22800050a3dd91ac80b
+Enter you packet in hexadecimal: aaaa9a7d00011b6078e23c00050a7869ca436a
+Enter you packet in hexadecimal: aaaa9a7d00011b6078e23200050a9b97f38496
+Enter you packet in hexadecimal: aaaa9a7d00011b6078e24600050ac55da33901
+Enter you packet in hexadecimal: aaaa9a7d00011b6078e25000050aa07f7bf344
+Enter you packet in hexadecimal: aaaa9a7d00011b6078e25a00050a02a552b6f0
+Enter you packet in hexadecimal: aaaa9a7d00011b6078e29600050af73c635dc4
+Enter you packet in hexadecimal: aaaa9a7d00011b6078e27800050a2b1edae586
+
+Enter packets of unequal length
+
+Enter you packet in hexadecimal: aaaa9a7d00011b6078e26400050aece62b6a77
+Enter you packet in hexadecimal: aaaa9a7d00011b6078e26e6400050ad521480584
+Enter you packet in hexadecimal: aaaa9a7d00011b6078e26e64c800050a24a8659b05
+Enter you packet in hexadecimal: aaaa9a7d00011b6078e26e64c86400050a40db28c0be
+
+Presenting packets inputed by user:
+
+Packet 1: aaaa9a7d00011b6078e22800050a3dd91ac80b
+Packet 2: aaaa9a7d00011b6078e23c00050a7869ca436a
+Packet 3: aaaa9a7d00011b6078e23200050a9b97f38496
+Packet 4: aaaa9a7d00011b6078e24600050ac55da33901
+Packet 5: aaaa9a7d00011b6078e25000050aa07f7bf344
+Packet 6: aaaa9a7d00011b6078e25a00050a02a552b6f0
+Packet 7: aaaa9a7d00011b6078e29600050af73c635dc4
+Packet 8: aaaa9a7d00011b6078e27800050a2b1edae586
+Packet 9: aaaa9a7d00011b6078e26400050aece62b6a77
+Packet 10: aaaa9a7d00011b6078e26e6400050ad521480584
+Packet 11: aaaa9a7d00011b6078e26e64c800050a24a8659b05
+Packet 12: aaaa9a7d00011b6078e26e64c86400050a40db28c0be
+```
