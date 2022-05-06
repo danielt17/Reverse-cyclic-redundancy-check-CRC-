@@ -235,6 +235,13 @@ In general a CRC calculation is done in the following way:
 
 Additional processing may be done during the calculation such as reflecting, masking and obfuscating as described above.
 
+A CRC calculation example:
+
+1. Start with the message to be encoded: 
+```
+11010011101100
+```
+
 ### The algorithm:
 
 ### Edge cases:
