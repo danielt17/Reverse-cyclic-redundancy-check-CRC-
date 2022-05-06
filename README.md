@@ -221,3 +221,8 @@ Running this program requires the following dependencies:
 ### The algorithm:
 
 ### Edge cases:
+
+The algorithm in its current state only works under the following constraints:
+
+1. The crc polynomial degree is multiple of four.
+2. XorIn and XorOut are either both true or false, this is a reasonable assumption as all crc codes I managed to find online are of this type. 
