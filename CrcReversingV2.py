@@ -11,6 +11,7 @@ import crcengine
 import numpy as np
 import logging
 from math import ceil
+from collections import Counter
 
 # %% Formatter
 
@@ -320,13 +321,21 @@ def Ranking_Estimated_Polynomial(polys):
     '''
     polys = np.asarray(polys,dtype = object)
     polys = polys[polys != 0]
-    values, counts = np.unique(polys, return_counts=True)
+    values, counts = Unique(polys)
+    # values, counts = np.unique(polys, return_counts=True)
     for i in reversed(range(3)):
         try: inds = np.argpartition(counts, -(i+1))[-(i+1):]; break;
         except: continue;
-    occurrence = counts[inds][::-1]; occurrence = occurrence/np.sum(occurrence) * 100;
-    polys_best = values[inds][::-1]
-    ranking = np.argsort(occurrence)[::-1]; occurrence = occurrence[ranking]; polys_best[ranking]
+    occurrence = []; polys_best = [];
+    for ind in inds:
+        occurrence.append(counts[ind]); polys_best.append(values[ind]); 
+    occurrence = occurrence[::-1]; polys_best = polys_best[::-1]
+    # occurrence = counts[inds][::-1]; 
+    # polys_best = values[inds][::-1];
+    occurrence = occurrence/np.sum(occurrence) * 100;
+    ranking = np.argsort(occurrence)[::-1]; 
+    occurrence = occurrence[ranking]; #polys_best = polys_best[ranking]
+    polys_best = [x for _,x in sorted(zip(list(ranking),polys_best))][::-1]
     return polys_best,occurrence
 
 def Print_Estimated_Polynomial_By_Ranking_After_Method(polys,occurrence,crc_width,enable_pre_text=True):
@@ -372,7 +381,7 @@ def Merge_By_Ranking_Polynomials(occurrence1,polys1,occurrence2,polys2):
     occurrences = list(occurrences[ranking])[::-1]
     polys = list(polys1) + list(polys2)
     polys = [x for _,x in sorted(zip(list(ranking),polys))][::-1]
-    polys_unique = Unique(polys)
+    polys_unique,_ = Unique(polys)
     new_occurrences = [];
     for cur_poly in polys_unique:
         indcies = np.where(cur_poly == np.array(polys))[0]
@@ -472,21 +481,27 @@ def Print_All_Possible_Xor_Outs(combinations):
             print('\n')
         print('\n\n\n\n\n')
 
-def Unique(ls):
+def Unique(ls,version=0):
     '''
     Description:
         This function find unique elemnts in a list, created because numpy
         unique functionality discards string when using unique.
     Inputs:
         ls - list - list to be uniqued.
+        version - int - type of unique method.
     Outputs:
         unique_list - list - list of unique elements.
     '''
-    unique_list = []
-    for x in ls:
-        if x not in unique_list:
-            unique_list.append(x)
-    return unique_list
+    if version == 0:
+        unique_list = Counter(ls).keys()
+        counts = Counter(ls).values()
+        return list(unique_list),list(counts)
+    elif version == 1:
+        unique_list = []
+        for x in ls:
+            if x not in unique_list:
+                unique_list.append(x)
+        return unique_list
 
 def Print_Estimated_Full_Estimated(combinations):
     '''
@@ -586,7 +601,7 @@ def Create_Example_Mode_Data(crc_algorithm,hand_crafted = True):
         #                     bytearray([12,0]),bytearray([4,0]),bytearray([24,0])]
         
         sequence_numbers = [bytearray([40,0]),bytearray([60,0]),bytearray([50,0]),bytearray([70,0]),
-                            bytearray([80,0]),bytearray([90,0]),bytearray([150,0]),bytearray([120,0]),bytearray([100,0]),bytearray([110,100,0]),bytearray([110,100,200,0]),bytearray([110,100,200,100,0])]
+                            bytearray([80,0]),bytearray([90,0]),bytearray([150,0]),bytearray([120,0]),bytearray([24,0]),bytearray([48,0]),bytearray([100,0]),bytearray([110,100,0]),bytearray([110,100,200,0]),bytearray([110,100,200,100,0])]
         
         data            = bytearray([5,10])
         packet_header = preamble_header + sync_header + type_header + dst_address + src_address
@@ -1232,8 +1247,9 @@ def Estimate_Xor_In_All_Possiblities(second_step_packets,polys,crc_width):
             for crc_family in crc_families:
                 for combination in packet_combinations:
                     xor_in_ls.append(Estimate_Xor_In(combination[0],combination[1],possible_poly,crc_width,crc_family))
-                xor_in_unique,counts = np.unique(xor_in_ls, return_counts=True)
-                if len(np.where(2<=counts)[0]) != 0:
+                xor_in_ls.append(int((crc_width//4)*'f',16)); xor_in_ls.append(0) # append special cases
+                xor_in_unique,counts = Unique(xor_in_ls)
+                if len(np.where(2<=np.array(counts))[0]) != 0:
                     generator_polys.append(cur_poly)
                     useful_polys.append(possible_poly)
                     useful_xor_in.append(list(xor_in_unique))
@@ -1300,7 +1316,7 @@ def Estimate_Xor_Out_All_Possiblities(first_step_packets,second_step_packets,gen
                         xor_outs.append(xor_out)
                     if len(xor_outs) <= np.unique(xor_outs,return_counts=True)[1][0] + threshold:
                         combinations.append([poly,crc_width,int(xor_in),ref_in,ref_out,xor_out])
-    combinations = Unique(combinations)
+    combinations = Unique(combinations,1)
     return combinations
 
 # %% Main function
@@ -1317,9 +1333,10 @@ def Main():
     Print_Estimated_Polynomial_By_Ranking_After_Method(polys,occurrence,crc_width,False)
     generator_polys,useful_polys,useful_xor_in = Estimate_Xor_In_All_Possiblities(second_step_packets,polys,crc_width)
     Print_Estimated_Polynomials_And_Xor_In(generator_polys,useful_polys,useful_xor_in)
-    combinations1 = Estimate_Xor_Out_All_Possiblities(first_step_packets,second_step_packets,generator_polys,useful_xor_in,crc_width)
-    combinations2 = Estimate_Xor_Out_All_Possiblities(first_step_packets,second_step_packets,useful_polys,useful_xor_in,crc_width)
-    combinations = Unique(combinations1 + combinations2)
+    combinations = Estimate_Xor_Out_All_Possiblities(first_step_packets,second_step_packets,generator_polys,useful_xor_in,crc_width)
+    if len(combinations) == 0:
+        combinations2 = Estimate_Xor_Out_All_Possiblities(first_step_packets,second_step_packets,useful_polys,useful_xor_in,crc_width)
+        combinations = Unique(combinations + combinations2,1)
     Print_All_Possible_Xor_Outs(combinations)
     Print_Estimated_Full_Estimated(combinations)
     return first_step_packets,second_step_packets,polys,crc_width,generator_polys,useful_polys,useful_xor_in,combinations
@@ -1333,26 +1350,15 @@ This is a list of CRC algorithms which we can't estimate currently correctly or
 fully, and what is the problem:
     1. crc15-can currenly the algorithm can only work for powers of 4 as this 
     is the hexadecimal size of bytearray. Actually the prolbem is the packets have GCD = 3.
-    2. crc16-autosar - polynomial estimated correctly while XorIn not, might
+    2. crc24-flexray16-a - polynomial estimated correctly while XorIn not, might
     be connected to not taking into account all possible solutions of the matrix
-    equation.
-    3. crc16-ccitt-false - same as in 2.
-    4. crc24-flexray16-a - same as in 2.
-    5. crc24-flexray16-b - same as in 2.
-    6. crc24-ble - same as in 2.
-    7. crc24-openpgp - same as in 2.
-    8. crc24-os-9- same as in 2.
-    9. crc32-c same as in 2.
-    10. crc32-mef same as in 2.
-    11. crc64-ms - same as in 2.
-    12. crc64-we - same as in 2.
-    13. crc64-xz - same as in 2.
-    
-    
-    ####### crc24-interlaken - failes for one packet choice but not the other, so its fine.
-    
-    Finally out of 38 CRCs only 13 cant be estimated currently, so 25 CRCs work. 
-    One can put the problems into 2 categories which should addressed.
+    equation..
+    3. crc24-flexray16-b - same as in 2.
+    4. crc24-ble - same as in 2.
+    5. crc24-openpgp - same as in 2.
+    6. crc24-interlaken - xor out esitmated incorrectly.
+    Finally out of 38 CRCs only 6 cant be estimated currently, so 32 CRCs work. 
+    One can put the problems into 3 categories which should addressed.
 '''
 
 if __name__ == '__main__':
