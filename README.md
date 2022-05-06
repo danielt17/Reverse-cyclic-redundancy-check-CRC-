@@ -208,5 +208,13 @@ xor_out:     0xffffffffff
 
 #### A Full output can be seen [here](https://github.com/danielt17/Reverse-cyclic-redundancy-check-CRC-/blob/main/output_example.txt)
 
+### Requirements:
+
+Running this program requires the following dependencies
+
+1. Python 3.7
+2. numpy 1.18.1
+3. crcengine 0.3.2
+
 
 
