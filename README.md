@@ -170,6 +170,24 @@ Packet 11: aaaa9a7d00011b6078e26e64c800050a24a8659b05
 Packet 12: aaaa9a7d00011b6078e26e64c86400050a40db28c0be
 ```
 
+Reversing result:
+
+```
+-----------------------------------------------
+Results of CRC reverse engneering algorithm:
+-----------------------------------------------
+
+
+-----------------------------------------------
+poly:        0x4820009
+width:       40
+seed:        0x0
+ref_in:      False
+ref_out:     False
+xor_out:     0xffffffffff
+-----------------------------------------------
+```
+
 #### Full output
 
 A full run of the algorithm would have the following structure:
