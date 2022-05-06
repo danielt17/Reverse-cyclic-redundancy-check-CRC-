@@ -273,7 +273,7 @@ A CRC calculation example:
 ```
 
 Some important theortical basics are also needed:
-1. In a more formal manner one may say that we are doing calculation over $GF(2)$
+1. In a more formal manner one may say that we are doing calculation over <img src="https://render.githubusercontent.com/render/math?math=GF(2)">.
 
 ### The algorithm:
 
