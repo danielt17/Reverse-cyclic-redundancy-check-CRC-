@@ -232,6 +232,7 @@ In general a CRC calculation is done in the following way:
 1. One takes the data block and appends zeros up to having data length modolu crc_width equal zero.
 2. Doing long division of padded(data) by crc_polynomial.
 3. Reminder is the CRC value of the data.
+
 Additional processing may be done during the calculation such as reflecting, masking and obfuscating as described above.
 
 ### The algorithm:
