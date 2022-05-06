@@ -246,6 +246,8 @@ The algorithm in its current state only works under the following constraints:
 
 ## References
 
-1. Gregory Ewing, "Reverse-Engineering a CRC Algorithm", https://www.csse.canterbury.ac.nz/greg.ewing/essays/CRC-Reverse-Engineering.html , March 2010.
-2. dramforever, "Magic tricks with CRC", https://dram.page/p/crc-tricks/, December 2021.
-3. 8051Enthusiast, "delsum", https://github.com/8051Enthusiast/delsum/blob/main/algorithms.md, Januray 2022.
+1. N. Williams, "A PAINLESS GUIDE TO CRC ERROR DETECTION ALGORITHMS", http://www.ross.net/crc/download/crc_v3.txt, August 1993.
+2. Wikipedia, "Cyclic redundancy check", https://en.wikipedia.org/wiki/Cyclic_redundancy_check, April 2022.
+3. Gregory Ewing, "Reverse-Engineering a CRC Algorithm", https://www.csse.canterbury.ac.nz/greg.ewing/essays/CRC-Reverse-Engineering.html , March 2010.
+4. dramforever, "Magic tricks with CRC", https://dram.page/p/crc-tricks/, December 2021.
+5. 8051Enthusiast, "delsum", https://github.com/8051Enthusiast/delsum/blob/main/algorithms.md, Januray 2022.
