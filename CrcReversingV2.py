@@ -7,16 +7,16 @@ Created on Sat Apr 16 12:41:30 2022
 
 # %% Imports
 
-import crcengine 
+from crcengine import get_algorithm_params,algorithms_available,new,create
+from logging import Formatter,DEBUG,INFO,WARNING,ERROR,CRITICAL,getLogger,StreamHandler
 import numpy as np
-import logging
 from math import ceil
 from collections import Counter
-import itertools
+from itertools import product
 
 # %% Formatter
 
-class Custom_Formatter(logging.Formatter):
+class Custom_Formatter(Formatter):
     """
     Description:
         This function configurates the logger object.
@@ -28,15 +28,15 @@ class Custom_Formatter(logging.Formatter):
     grey = "\x1b[38;20m"; green = "\x1b[32;1m"; yellow = "\x1b[33;20m"
     red = "\x1b[31;20m"; bold_red = "\x1b[31;1m"; reset = "\x1b[0m"
     format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s (%(filename)s:%(lineno)d)"
-    FORMATS = {logging.DEBUG: grey + format + reset, 
-               logging.INFO: green + format + reset, 
-               logging.WARNING: yellow + format + reset, 
-               logging.ERROR: red + format + reset, 
-               logging.CRITICAL: bold_red + format + reset}
+    FORMATS = {DEBUG: grey + format + reset, 
+               INFO: green + format + reset, 
+               WARNING: yellow + format + reset, 
+               ERROR: red + format + reset, 
+               CRITICAL: bold_red + format + reset}
 
     def format(self, record):
         log_fmt = self.FORMATS.get(record.levelno)
-        formatter = logging.Formatter(log_fmt)
+        formatter = Formatter(log_fmt)
         return formatter.format(record)
 
 def Logger_Object():
@@ -48,10 +48,10 @@ def Logger_Object():
     Outputs:
         logger - logging module - a logging object configured.
     """
-    logger = logging.getLogger("CRC reversing")
-    logger.setLevel(logging.DEBUG)
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
+    logger = getLogger("CRC reversing")
+    logger.setLevel(DEBUG)
+    ch = StreamHandler()
+    ch.setLevel(DEBUG)
     ch.setFormatter(Custom_Formatter())
     logger.addHandler(ch)
     return logger
@@ -174,7 +174,7 @@ def Print_Crc_Parameters(crc_algorithm_name):
     Outputs:
         None. Prints text.
     '''
-    params = crcengine.get_algorithm_params(crc_algorithm_name)
+    params = get_algorithm_params(crc_algorithm_name)
     print('\nCyclic redundancy check parameters: \n')
     for _,param in enumerate(params.items()):
         if param[0] == 'poly':
@@ -646,11 +646,11 @@ def Get_Initial_Example_Mode_data(hand_crafted=True):
         crc_width - int - the length of the crc polynomial.
     '''
     print('Choose one of the following choices and write its name below:\n')
-    print(list(crcengine.algorithms_available()))
+    print(list(algorithms_available()))
     while True:
         try:
             crc_algorithm_name = input('Write the name of the CRC code you want to reverse. \n\n')
-            crc_algorithm = crcengine.new(crc_algorithm_name)
+            crc_algorithm = new(crc_algorithm_name)
             break
         except:
             print("\nPlese write the name of the algorithm correctly!\n\n")      
@@ -1233,7 +1233,7 @@ def Create_All_Possible_Vec_Combinations(mat,vec,zero_rows):
     for zero_row in zero_rows:
         mat_new[zero_row,zero_row] = 1
     vecs = []
-    combination =["".join(seq) for seq in itertools.product("01", repeat=len(zero_rows))]
+    combination =["".join(seq) for seq in product("01", repeat=len(zero_rows))]
     for seq in combination:
         vec_new = vec.copy()
         for ind,row in enumerate(zero_rows):
@@ -1326,7 +1326,7 @@ def Estimate_Xor_Out(packet,poly,crc_width,xor_in,ref_in,ref_out):
     Outputs:
         xor_out - int - estimated xor_out_value.
     '''
-    crc_algorithm = crcengine.create(poly, crc_width, xor_in, ref_in=ref_in,ref_out=ref_out, xor_out=0)
+    crc_algorithm = create(poly, crc_width, xor_in, ref_in=ref_in,ref_out=ref_out, xor_out=0)
     crc_estimated = Get_CRC(packet[0],crc_algorithm)
     xor_out = Bytearray_To_Int(Byte_Xor(crc_estimated,packet[1]))
     return xor_out
