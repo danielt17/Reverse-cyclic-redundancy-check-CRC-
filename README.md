@@ -285,6 +285,8 @@ Where the parameters are defined in the following way:
 6. F (Final) - xor_out the mask applied at the output of the crc.
 7. P (Polynomial) - is the taps (polynomial coefficents with the highest degree) + x^N.
 
+The operation x^power acts as a left shift operator.
+
 ### The algorithm:
 
 ### Edge cases:
