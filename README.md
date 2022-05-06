@@ -27,6 +27,10 @@ I will be going over the following topics:
 
 ### Usage example:
 
+This code has two modes of operation: 
+1. Example mode where the user chooses a CRC from a list to reverse as an example.
+2. User mode where the user enters his own packets (data+crc) to reverse the CRC for. 
+
 Starting the program we are given the following options:
 
 ```
@@ -42,12 +46,6 @@ There are two modes of running the tool: example mode, by choosing some known CR
 
 To enter example mode press 1, for user mode press 2.
 ```
-
-This code has two modes of operation: 
-1. Example mode where the user chooses a CRC from a list to reverse as an example.
-2. User mode where the user enters his own packets (data+crc) to reverse the CRC for. 
-
-
 
 #### User mode:
 
