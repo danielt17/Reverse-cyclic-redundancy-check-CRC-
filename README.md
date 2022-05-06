@@ -101,4 +101,11 @@ From here the algorithm starts running in the same manner it would run for the u
 
 #### User mode:
 
+Lets say we choose user mode by entering 2. We are now asked to enter the polynomial degree, the algorithm assumes we know the degree of the CRC.
+
+```
+You choose: user mode.
+
+Please write the CRC polynomial degree, a number between 8-128 including the limits:
+```
 
