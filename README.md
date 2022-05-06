@@ -10,9 +10,6 @@ CRC reverse engneering is public tool to reverse engineer a CRC code parameters.
 | An example of a given packet structure, the CRC is present and could be unknown. |
 </div>
 
-| ![Packet_Structure](https://user-images.githubusercontent.com/60748408/167182684-ff3d94b4-44ef-43c5-b20f-588950d53eb5.png ) | 
-|:--:| 
-| An example of a given packet structure, the CRC is present and could be unknown. |
 
 
 
