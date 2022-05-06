@@ -303,6 +303,10 @@ The algorithm in its current state only works under the following constraints:
 1. The crc polynomial degree is multiple of four.
 2. XorIn and XorOut are either both true or false, this is a reasonable assumption as all crc codes I managed to find online are of this type. 
 
+## Successful CRCs reversed:
+
+
+
 ## References
 
 1. N. Williams, "A PAINLESS GUIDE TO CRC ERROR DETECTION ALGORITHMS", http://www.ross.net/crc/download/crc_v3.txt, August 1993.
