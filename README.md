@@ -115,3 +115,8 @@ The next parameter we are asked to input is the number of packets we are going t
 Please enter the number of packets you want to enter, while the minimum number of packets is: 6 and the maximum is: 100 including the limits.
 ```
 
+Afterwards we will be asked if the data we eneter is in binary or in hex the program can handle both, one just has to specify this here in advance.
+
+```
+Before entering your data please choose the representation you want to use: binary or hex. To choose binary write binary, to choose hexadecimal write hex.
+```
