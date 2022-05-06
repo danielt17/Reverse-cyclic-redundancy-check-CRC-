@@ -309,44 +309,44 @@ The algorithm in its current state only works under the following constraints:
 
 |        CRC name        | Reverse success |
 |:----------------------:|:---------------:|
-|          CRC 8         |       Yes       |
-|     CRC8 - Autosar     |       Yes       |
-|    CRC8 - Bluetooth    |       Yes       |
-|      CRC8 - ccitt      |       Yes       |
-|     CRC8 - GSM - b     |       Yes       |
-|   CRC8 - sae - j1850   |       Yes       |
+|          CRC 8         |     **Yes**     |
+|     CRC8 - Autosar     |     **Yes**     |
+|    CRC8 - Bluetooth    |     **Yes**     |
+|      CRC8 - ccitt      |     **Yes**     |
+|     CRC8 - GSM - b     |     **Yes**     |
+|   CRC8 - sae - j1850   |     **Yes**     |
 |       CRC15 - can      |        No       |
-|     CRC16 - Kermit     |       Yes       |
-|  CRC16 - ccitt - true  |       Yes       |
-|     CRC16 - xmodem     |       Yes       |
-|     CRC16 - Autosar    |       Yes       |
-|  CRC16 - ccitt - false |       Yes       |
-|    CRC16 - CDMA2000    |       Yes       |
-|       CRC16 - IBM      |       Yes       |
-|     CRC16 - modbus     |       Yes       |
-|    CRC16 - profibus    |       Yes       |
+|     CRC16 - Kermit     |     **Yes**     |
+|  CRC16 - ccitt - true  |     **Yes**     |
+|     CRC16 - xmodem     |     **Yes**     |
+|     CRC16 - Autosar    |     **Yes**     |
+|  CRC16 - ccitt - false |     **Yes**     |
+|    CRC16 - CDMA2000    |     **Yes**     |
+|       CRC16 - IBM      |     **Yes**     |
+|     CRC16 - modbus     |     **Yes**     |
+|    CRC16 - profibus    |     **Yes**     |
 |  CRC24 - flexray16 - a |        No       |
 |  CRC24 - flexray16 - b |        No       |
 |       CRC24 - BLE      |        No       |
-|   CRC24 - interlaken   |       Yes       |
-|     CRC24 - LTE - a    |       Yes       |
-|     CRC24 - LTE - b    |       Yes       |
+|   CRC24 - interlaken   |     **Yes**     |
+|     CRC24 - LTE - a    |     **Yes**     |
+|     CRC24 - LTE - b    |     **Yes**     |
 |     CRC24 - openpgp    |        No       |
-|     CRC24 - os - 9     |       Yes       |
-|          CRC32         |       Yes       |
-|      CRC32 - bzip2     |       Yes       |
-|        CRC32 - c       |       Yes       |
-|    CRC32- base91 - d   |       Yes       |
-| CRC32 - cd - rom - edc |       Yes       |
-|      CRC32 - cksum     |       Yes       |
-|       CRC32 - mef      |       Yes       |
-|       CRC - xfer       |       Yes       |
-|       CRC40 - GSM      |       Yes       |
-|      CRC64 - ECMA      |       Yes       |
-|    CRC64 - go - iso    |       Yes       |
-|       CRC64 - ms       |       Yes       |
-|       CRC64 - we       |       Yes       |
-|       CRC64 - xz       |       Yes       |
+|     CRC24 - os - 9     |     **Yes**     |
+|          CRC32         |     **Yes**     |
+|      CRC32 - bzip2     |     **Yes**     |
+|        CRC32 - c       |     **Yes**     |
+|    CRC32- base91 - d   |     **Yes**     |
+| CRC32 - cd - rom - edc |     **Yes**     |
+|      CRC32 - cksum     |     **Yes**     |
+|       CRC32 - mef      |     **Yes**     |
+|       CRC - xfer       |     **Yes**     |
+|       CRC40 - GSM      |     **Yes**     |
+|      CRC64 - ECMA      |     **Yes**     |
+|    CRC64 - go - iso    |     **Yes**     |
+|       CRC64 - ms       |     **Yes**     |
+|       CRC64 - we       |     **Yes**     |
+|       CRC64 - xz       |     **Yes**     |
  
  </div>
 
