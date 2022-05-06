@@ -25,6 +25,10 @@ I will be going over the following topics:
 4. The algorithm.
 5. Edge cases.
 
-### Usage example
+### Usage example:
+
+This code has two modes of operation: 
+1. User mode where the user enters his own packets (data+crc) to reverse the CRC for. 
+2. Example mode where the user chooses a CRC from a list to reverse as an example. 
 
 
