@@ -272,6 +272,9 @@ A CRC calculation example:
 00000000000000 100 <--- remainder (3 bits).  Division algorithm stops here as dividend is equal to zero.
 ```
 
+Some important theortical basics are also needed:
+1. In a more formal manner one may say that we are doing calculation over $GF(2)$
+
 ### The algorithm:
 
 ### Edge cases:
