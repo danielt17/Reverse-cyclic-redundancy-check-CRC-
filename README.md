@@ -101,11 +101,17 @@ From here the algorithm starts running in the same manner it would run for the u
 
 #### User mode:
 
-Lets say we choose user mode by entering 2. We are now asked to enter the polynomial degree, the algorithm assumes we know the degree of the CRC.
+Lets say we choose user mode by entering 2. We are now asked to enter the polynomial degree, the algorithm assumes we know the degree of the CRC. In this example i choose to enter a polynomial degree of 40.
 
 ```
 You choose: user mode.
 
 Please write the CRC polynomial degree, a number between 8-128 including the limits:
+```
+
+The next parameter we are asked to input is the number of packets we are going to input into the algorithm, lets say 12.
+
+```
+Please enter the number of packets you want to enter, while the minimum number of packets is: 6 and the maximum is: 100 including the limits.
 ```
 
