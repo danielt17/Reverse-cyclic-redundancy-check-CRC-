@@ -97,6 +97,8 @@ Packet 13: aaaa9a7d00011b6078e26e64c800050ae197bc59
 Packet 14: aaaa9a7d00011b6078e26e64c86400050a1596c60f
 ```
 
+From here the algorithm starts running in the same manner it would run for the usercase. A full output of the algorithm will be seen after I describe also the User mode.
+
 #### User mode:
 
 
