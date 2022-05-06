@@ -274,6 +274,15 @@ A CRC calculation example:
 
 Some important theortical basics are also needed:
 1. In a more formal manner one may say that we are doing calculation in polynomials over <img src="https://render.githubusercontent.com/render/math?math=GF(2)">, where the polynomial coefficents are binary.
+2. one may formalize the CRC calculation in the following manner:
+<p align="center">
+  <img 
+    width="300"
+    height="300"
+    src="https://render.githubusercontent.com/render/math?math=r = (mx^{n}+Ix^{L}+F) mod P"
+  >
+</p>
+
 
 ### The algorithm:
 
