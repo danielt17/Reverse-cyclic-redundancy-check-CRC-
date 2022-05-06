@@ -97,7 +97,9 @@ Packet 13: aaaa9a7d00011b6078e26e64c800050ae197bc59
 Packet 14: aaaa9a7d00011b6078e26e64c86400050a1596c60f
 ```
 
+
 Reversing result:
+
 ```
 -----------------------------------------------
 Results of CRC reverse engneering algorithm:
@@ -184,6 +186,7 @@ Packet 10: aaaa9a7d00011b6078e26e6400050ad521480584
 Packet 11: aaaa9a7d00011b6078e26e64c800050a24a8659b05
 Packet 12: aaaa9a7d00011b6078e26e64c86400050a40db28c0be
 ```
+
 
 Reversing result:
 
