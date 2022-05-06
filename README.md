@@ -276,7 +276,14 @@ Some important theortical basics are also needed:
 1. In a more formal manner one may say that we are doing calculation in polynomials over <img src="https://render.githubusercontent.com/render/math?math=GF(2)">, where the polynomial coefficents are binary.
 2. one may formalize the CRC calculation in the following manner: <img src="https://latex.codecogs.com/svg.image?r&space;=&space;(&space;mx^n&plus;Ix^L&plus;F&space;)&space;mod&space;P">
   
-
+Where the parameters are defined in the following way:
+1. L (length) - is the message length in bits.
+2. m (message) - is the message bit string as a polynomial.
+3. N is the length of the CRC.
+4. r (remainder) is the crc value.
+5. I (Init) - xor_in the initial value of the CRC register.
+6. F (Final) - xor_out the mask applied at the output of the crc.
+7. P (Polynomial) - is the taps (polynomial coefficents with the highest degree) + x^N.
 
 ### The algorithm:
 
