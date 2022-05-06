@@ -1311,7 +1311,7 @@ def Estimate_Xor_Out_All_Possiblities(first_step_packets,second_step_packets,gen
                     for packet in packets:
                         xor_out = Estimate_Xor_Out(packet,poly,crc_width,int(xor_in),ref_in,ref_out)
                         xor_outs.append(xor_out)
-                    if len(xor_outs) <= np.unique(xor_outs,return_counts=True)[1][0] + threshold:
+                    if len(xor_outs) <= np.max(np.unique(xor_outs,return_counts=True)[1]) + threshold:
                         combinations.append([poly,crc_width,int(xor_in),ref_in,ref_out,xor_out])
     combinations = Unique(combinations,1)
     return combinations
@@ -1353,9 +1353,8 @@ fully, and what is the problem:
     3. crc24-flexray16-b - same as in 2.
     4. crc24-ble - same as in 2.
     5. crc24-openpgp - same as in 2.
-    6. crc24-interlaken - xor out esitmated incorrectly.
-    Finally out of 38 CRCs only 6 cant be estimated currently, so 32 CRCs work. 
-    One can put the problems into 3 categories which should addressed.
+    Finally out of 38 CRCs only 5 cant be estimated currently, so 33 CRCs work. 
+    One can put the problems into 2 categories which should addressed.
 '''
 
 if __name__ == '__main__':
