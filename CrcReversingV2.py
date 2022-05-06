@@ -12,6 +12,7 @@ import numpy as np
 import logging
 from math import ceil
 from collections import Counter
+import itertools
 
 # %% Formatter
 
@@ -1196,6 +1197,50 @@ def Gauss_Jordan_Elimination_In_GF_2(matrix_original,vector_original):
         i += 1; j +=1
     return matrix[:,:-1],matrix[:,-1]    
 
+def Check_If_Soultion_Exists(mat,xor_in):
+    '''
+    Description:
+        This function takes gets a matrix in row echlon form and checks if a solution
+        exists for the matrix.
+    Inputs:
+        mat - numpy array - matrix in row echlon form.
+        and the second is the crc.
+        vec - numpy array - vector in GF(2).
+    Outputs:
+        zero_rows - numpy array - rows which result in infinte number of solutions.
+    '''
+    zero_rows = np.where(~mat.any(axis=1))[0]
+    for zero_row in zero_rows:
+        if np.any(xor_in[zero_rows] != [0]*len(xor_in[zero_rows])):
+            raise Exception('Equation is unsolvable!')
+    return zero_rows
+
+def Create_All_Possible_Vec_Combinations(mat,vec,zero_rows):
+    '''
+    Description:
+        This function creates a list of vectors to check the soultion aginst,
+        in case there is more than one solution.
+    Inputs:
+        mat - numpy array - matrix in row echlon form.
+        and the second is the crc.
+        vec - numpy array - vector in GF(2).
+        zero_rows - numpy array - array of the rows which contain full zeros.
+    Outputs:
+        mat_new - numpy array - matrix to test the solutions against.
+        vecs - list of vectors - list of vectors to check the solution against
+    '''
+    mat_new = mat.copy()
+    for zero_row in zero_rows:
+        mat_new[zero_row,zero_row] = 1
+    vecs = []
+    combination =["".join(seq) for seq in itertools.product("01", repeat=len(zero_rows))]
+    for seq in combination:
+        vec_new = vec.copy()
+        for ind,row in enumerate(zero_rows):
+            vec_new[row] = int(seq[ind])
+        vecs.append(vec_new)
+    return mat_new,vecs
+
 def Estimate_Xor_In(packet1,packet2,poly,crc_width,crc_family):
     '''
     Description:
@@ -1212,11 +1257,22 @@ def Estimate_Xor_In(packet1,packet2,poly,crc_width,crc_family):
     '''
     vector = Create_Target_Vector(packet1,packet2,poly,crc_width,crc_family)
     matrix = Run_Relative_Shift_Matrix(packet1,packet2,poly,crc_width)
-    mat, xor_in = Gauss_Jordan_Elimination_In_GF_2(matrix,vector)
-    if np.sum(mat) == 0 and np.sum(xor_in) == 0:
+    mat, vec_solution = Gauss_Jordan_Elimination_In_GF_2(matrix,vector)
+    if np.sum(mat) == 0 and np.sum(vec_solution) == 0:
         xor_in = np.array([1]*crc_width,dtype = np.uint8)
-    xor_in = Turn_Numpy_Array_Of_Bits_To_Bitstring(xor_in,crc_width)
-    return int(xor_in,2)    
+        xor_in = int(Turn_Numpy_Array_Of_Bits_To_Bitstring(xor_in,crc_width),2)
+        xor_in = [xor_in]
+    else:
+        xor_in = []
+        try:
+            zero_rows = Check_If_Soultion_Exists(mat,vec_solution)
+            if len(zero_rows) > 0 and len(zero_rows)<5:
+                mat_new, vecs = Create_All_Possible_Vec_Combinations(mat,vec_solution,zero_rows)
+                for cur_vector in vecs:
+                   _,cur_xor_in = Gauss_Jordan_Elimination_In_GF_2(mat_new,np.reshape(cur_vector,(crc_width,1)))
+                   xor_in.append(int(Turn_Numpy_Array_Of_Bits_To_Bitstring(cur_xor_in,crc_width),2))
+        except: pass
+    return xor_in   
 
 def Estimate_Xor_In_All_Possiblities(second_step_packets,polys,crc_width):
     '''
@@ -1243,7 +1299,7 @@ def Estimate_Xor_In_All_Possiblities(second_step_packets,polys,crc_width):
             xor_in_ls = []
             for crc_family in crc_families:
                 for combination in packet_combinations:
-                    xor_in_ls.append(Estimate_Xor_In(combination[0],combination[1],possible_poly,crc_width,crc_family))
+                    xor_in_ls = xor_in_ls + Estimate_Xor_In(combination[0],combination[1],possible_poly,crc_width,crc_family)
                 xor_in_ls.append(int((crc_width//4)*'f',16)); xor_in_ls.append(0) # append special cases
                 xor_in_unique,counts = Unique(xor_in_ls)
                 if len(np.where(2<=np.array(counts))[0]) != 0:
@@ -1343,19 +1399,7 @@ def Main():
 # %% Run main
 
 '''
-This is a list of CRC algorithms which we can't estimate currently correctly or
-fully, and what is the problem:
-    1. crc15-can currenly the algorithm can only work for powers of 4 as this 
-    is the hexadecimal size of bytearray. Actually the prolbem is the packets have GCD = 3.
-    2. crc24-flexray16-a - polynomial estimated correctly while XorIn not, might
-    be connected to not taking into account all possible solutions of the matrix
-    equation..
-    3. crc24-flexray16-b - same as in 2.
-    4. crc24-ble - same as in 2.
-    5. crc24-openpgp - same as in 2.
-    
-    Finally out of 38 CRCs only 5 cant be estimated currently, so 33 CRCs work. 
-    One can put the problems into 2 categories which should addressed.
+The algorithm works only for Crcs with degree which is a multiple of four.
 '''
 
 if __name__ == '__main__':
