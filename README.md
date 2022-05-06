@@ -27,7 +27,7 @@ I will be going over the following topics:
 
 ### Usage example:
 
-Sarting the program we are given the following options:
+Starting the program we are given the following options:
 
 ```
 ----------------------------------------
