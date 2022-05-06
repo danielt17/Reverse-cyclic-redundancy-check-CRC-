@@ -10,13 +10,18 @@ CRC reverse engneering is public tool to reverse engineer a CRC code parameters.
 | An example of a given packet structure, the CRC is present and could be unknown. |
 </div>
 
+## Agenda:
+
+This program was written inorder to migrate CRC-REVENG to python, as being written in C makes it a lot harder to understand and to extended.
+
+
 I will be going over the following topics:
 
 1. Usage example (example mode and user mode).
 2. Requirements.
 3. A review of cylic redundancy check codes.
-4. How the CRC reverse engneering works.
-5. 
+4. The algorithm.
+5. Failures.
 
 
 
