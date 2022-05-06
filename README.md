@@ -289,6 +289,13 @@ The operation x^power acts as a left shift operator.
 
 ### The algorithm:
 
+The algorithm has three main steps to it:
+1. Estimating the CRC polynomial.
+2. Estimating XorIn.
+3. Estimating XorOut, RefIn and RefOut.
+
+
+
 ### Edge cases:
 
 The algorithm in its current state only works under the following constraints:
