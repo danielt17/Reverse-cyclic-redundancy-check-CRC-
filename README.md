@@ -1,6 +1,6 @@
 # Reverse cyclic redundancy check (CRC) codes.
 
-CRC reverse engneering is public tool to reverse engineer a CRC code parameters. The tool should be usefull for reverse engneering unknown communication protcols usually in link layer (Frames), especially for RF systems. In the figure below one can easily notice the existence of a CRC field, in case one does not know the CRC generator parameters, given some combinations of packet and CRC's he can recover the CRC generator parameters. This could be useful in case one wants to forge messages to look like valid messages.
+CRC reverse engneering is a public tool to reverse engineer a CRC code parameters. The tool should be usefull for reverse engneering unknown communication protcols usually in link layer (Frames), especially for RF systems. In the figure below one can easily notice the existence of a CRC field, in case one does not know the CRC generator parameters, given some combinations of packet and CRC's he can recover the CRC generator parameters. This could be useful in case one wants to forge messages to look like valid messages.
 
 
 <div align="center">
