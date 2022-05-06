@@ -120,3 +120,14 @@ Afterwards we will be asked if the data we eneter is in binary or in hex the pro
 ```
 Before entering your data please choose the representation you want to use: binary or hex. To choose binary write binary, to choose hexadecimal write hex.
 ```
+
+Now we are asked to enter our packets in a concatanted form where packet = data + crc.
+
+```
+When enetering packets start with the data, and than concatenate the crc.
+
+Enter packets of equal length, optimal packets should have only one field changing, look at packets where only sequence number changes.
+
+Enter you packet in hexadecimal:
+```
+
