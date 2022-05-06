@@ -305,7 +305,28 @@ The algorithm in its current state only works under the following constraints:
 
 ## Successful CRCs reversed:
 
-
+|        CRC name       | Reverse success |
+|:---------------------:|:---------------:|
+|         CRC 8         |       Yes       |
+|     CRC8 - Autosar    |       Yes       |
+|    CRC8 - Bluetooth   |       Yes       |
+|      CRC8 - ccitt     |       Yes       |
+|     CRC8 - GSM - b    |       Yes       |
+|   CRC8 - sae - j1850  |       Yes       |
+|      CRC15 - can      |        No       |
+|     CRC16 - Kermit    |       Yes       |
+|  CRC16 - ccitt - true |       Yes       |
+|     CRC16 - xmodem    |       Yes       |
+|    CRC16 - Autosar    |       Yes       |
+| CRC16 - ccitt - false |       Yes       |
+|    CRC16 - CDMA2000   |       Yes       |
+|      CRC16 - IBM      |       Yes       |
+|     CRC16 - modbus    |       Yes       |
+|    CRC16 - profibus   |       Yes       |
+| CRC24 - flexray16 - a |        No       |
+| CRC24 - flexray16 - b |        No       |
+|                       |                 |
+|                       |                 |
 
 ## References
 
