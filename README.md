@@ -241,6 +241,36 @@ A CRC calculation example:
 ```
 11010011101100
 ```
+2. This is first padded with zeros corresponding to the bit length n of the CRC. This is done so that the resulting code word is in systematic form. Here is the first calculation for computing a 3-bit CRC: 
+```
+11010011101100 000 <--- input right padded by 3 bits
+1011               <--- divisor (4 bits) = x³ + x + 1
+------------------
+01100011101100 000 <--- result
+```
+3. The full calculation is done here:
+```
+11010011101100 000 <--- input right padded by 3 bits
+1011               <--- divisor
+01100011101100 000 <--- result (note the first four bits are the XOR with the divisor beneath, the rest of the bits are unchanged)
+ 1011              <--- divisor ...
+00111011101100 000
+  1011
+00010111101100 000
+   1011
+00000001101100 000 <--- note that the divisor moves over to align with the next 1 in the dividend (since quotient for that step was zero)
+       1011             (in other words, it doesn't necessarily move one bit per iteration)
+00000000110100 000
+        1011
+00000000011000 000
+         1011
+00000000001110 000
+          1011
+00000000000101 000
+           101 1
+-----------------
+00000000000000 100 <--- remainder (3 bits).  Division algorithm stops here as dividend is equal to zero.
+```
 
 ### The algorithm:
 
