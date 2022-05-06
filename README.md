@@ -277,8 +277,6 @@ Some important theortical basics are also needed:
 2. one may formalize the CRC calculation in the following manner:
 <p align="center">
   <img 
-    width="100"
-    height="100"
     src=https://latex.codecogs.com/png.image?\dpi{110}r&space;=&space;(&space;mx^n&plus;Ix^L&plus;F&space;)&space;mod&space;P
   >
 </p>
