@@ -228,6 +228,9 @@ CRCs have the following parameters:
 5. xor_out - a value to be exclusive-ored with the final CRC value.
 6. ref_out - whether to reverse the bits of the CRC before presenting it as the final result. 
 
+In general a CRC calculation is done in the following way:
+1. 
+
 ### The algorithm:
 
 ### Edge cases:
@@ -236,3 +239,7 @@ The algorithm in its current state only works under the following constraints:
 
 1. The crc polynomial degree is multiple of four.
 2. XorIn and XorOut are either both true or false, this is a reasonable assumption as all crc codes I managed to find online are of this type. 
+
+## References
+
+1. Gregory Ewing, "Reverse-Engineering a CRC Algorithm", https://www.csse.canterbury.ac.nz/greg.ewing/essays/CRC-Reverse-Engineering.html , March 2010.
