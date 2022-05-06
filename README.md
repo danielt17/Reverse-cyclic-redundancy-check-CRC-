@@ -305,7 +305,6 @@ The algorithm in its current state only works under the following constraints:
 
 ## Successful CRCs reversed:
 
-<div align="center">
 
 |        CRC name        | Reverse success |
 |:----------------------:|:---------------:|
@@ -348,7 +347,6 @@ The algorithm in its current state only works under the following constraints:
 |       CRC64 - we       |     **Yes**     |
 |       CRC64 - xz       |     **Yes**     |
  
- </div>
 
 ## References
 
