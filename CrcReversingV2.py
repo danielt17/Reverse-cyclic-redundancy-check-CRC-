@@ -322,7 +322,6 @@ def Ranking_Estimated_Polynomial(polys):
     polys = np.asarray(polys,dtype = object)
     polys = polys[polys != 0]
     values, counts = Unique(polys)
-    # values, counts = np.unique(polys, return_counts=True)
     for i in reversed(range(3)):
         try: inds = np.argpartition(counts, -(i+1))[-(i+1):]; break;
         except: continue;
@@ -330,11 +329,9 @@ def Ranking_Estimated_Polynomial(polys):
     for ind in inds:
         occurrence.append(counts[ind]); polys_best.append(values[ind]); 
     occurrence = occurrence[::-1]; polys_best = polys_best[::-1]
-    # occurrence = counts[inds][::-1]; 
-    # polys_best = values[inds][::-1];
     occurrence = occurrence/np.sum(occurrence) * 100;
     ranking = np.argsort(occurrence)[::-1]; 
-    occurrence = occurrence[ranking]; #polys_best = polys_best[ranking]
+    occurrence = occurrence[ranking];
     polys_best = [x for _,x in sorted(zip(list(ranking),polys_best))][::-1]
     return polys_best,occurrence
 
