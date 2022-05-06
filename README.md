@@ -20,7 +20,7 @@ This program was written in order to migrate CRC-REVENG to python, as being writ
 I will be going over the following topics:
 
 1. Usage example (example mode and user mode).
-2. Requirements.
+2. Requirements for running the code.
 3. A review of cylic redundancy check codes.
 4. The algorithm.
 5. Edge cases.
