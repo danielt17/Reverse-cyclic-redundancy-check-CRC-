@@ -279,7 +279,7 @@ Some important theortical basics are also needed:
   <img 
     width="300"
     height="300"
-    src="https://render.githubusercontent.com/render/math?math=r = (mx^{n}+Ix^{L}+F) mod P"
+    src="https://render.githubusercontent.com/render/math?math=r = (mx^{n} + Ix^{L} + F) mod P"
   >
 </p>
 
