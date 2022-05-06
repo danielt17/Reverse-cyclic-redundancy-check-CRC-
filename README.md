@@ -25,6 +25,6 @@ I will be going over the following topics:
 4. The algorithm.
 5. Edge cases.
 
-
+### Usage example
 
 
