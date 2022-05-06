@@ -60,6 +60,43 @@ Choose one of the following choices and write its name below:
 Write the name of the CRC code you want to reverse.
 ```
 
+Lets say we are going to choose: crc32, therefore at the start we will see the crc32 parameters which we want to reverse, and the simulated packets.
+
+```
+Cyclic redundancy check parameters:
+
+poly: 0x4c11db7
+width: 32.
+seed: 4294967295.
+ref_in: True.
+ref_out: True.
+xor_out: 4294967295.
+name: crc32.
+
+
+
+Simulated packet structure:
+Preamble + Sync + Type + DST Address + SRC Address + Sequence Number + Data + CRC
+
+
+Presenting packets inputed by user:
+
+Packet 1: aaaa9a7d00011b6078e22800050a27d3bd69
+Packet 2: aaaa9a7d00011b6078e23c00050af8a87da1
+Packet 3: aaaa9a7d00011b6078e23200050a18770a92
+Packet 4: aaaa9a7d00011b6078e24600050afc2a3d59
+Packet 5: aaaa9a7d00011b6078e25000050a8958351a
+Packet 6: aaaa9a7d00011b6078e25a00050ae6e5d57e
+Packet 7: aaaa9a7d00011b6078e29600050ada7e84c0
+Packet 8: aaaa9a7d00011b6078e27800050aecdeb2cb
+Packet 9: aaaa9a7d00011b6078e21800050ad7f845c8
+Packet 10: aaaa9a7d00011b6078e23000050ab27ec219
+Packet 11: aaaa9a7d00011b6078e26400050af6115aec
+Packet 12: aaaa9a7d00011b6078e26e6400050ae43a1f4b
+Packet 13: aaaa9a7d00011b6078e26e64c800050ae197bc59
+Packet 14: aaaa9a7d00011b6078e26e64c86400050a1596c60f
+```
+
 #### User mode:
 
 
