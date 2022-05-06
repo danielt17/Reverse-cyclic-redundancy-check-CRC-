@@ -29,7 +29,7 @@ I will be going over the following topics:
 
 Sarting the program we are given the following options:
 
-'''
+```
 ----------------------------------------
 
 Cyclic redundancy check (CRC) reverse engneering tool.
@@ -41,7 +41,7 @@ Cyclic redundancy check (CRC) reverse engneering tool.
 There are two modes of running the tool: example mode, by choosing some known CRC with its full parameters, or user mode in which the user eneters his own packet with data and CRC values concatenated.
 
 To enter example mode press 1, for user mode press 2.
-'''
+```
 
 This code has two modes of operation: 
 1. Example mode where the user chooses a CRC from a list to reverse as an example.
