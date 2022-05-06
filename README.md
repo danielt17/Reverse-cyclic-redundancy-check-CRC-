@@ -210,7 +210,7 @@ xor_out:     0xffffffffff
 
 ### Requirements:
 
-Running this program requires the following dependencies
+Running this program requires the following dependencies:
 
 1. Python 3.7
 2. numpy 1.18.1
