@@ -97,7 +97,22 @@ Packet 13: aaaa9a7d00011b6078e26e64c800050ae197bc59
 Packet 14: aaaa9a7d00011b6078e26e64c86400050a1596c60f
 ```
 
-From here the algorithm starts running in the same manner it would run for the usercase. A full output of the algorithm will be seen after I describe also the User mode.
+Reversing result:
+```
+-----------------------------------------------
+Results of CRC reverse engneering algorithm:
+-----------------------------------------------
+
+
+-----------------------------------------------
+poly:        0x4c11db7
+width:       32
+seed:        0xffffffff
+ref_in:      True
+ref_out:     True
+xor_out:     0xffffffff
+-----------------------------------------------
+```
 
 #### User mode:
 
