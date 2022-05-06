@@ -218,6 +218,16 @@ Running this program requires the following dependencies:
 
 ### A review of Cyclic Redundancy Check codes:
 
+A cyclic redundancy check (CRC) is an error-detecting code commonly used in digital networks and storage devices to detect accidental changes to digital data. Blocks of data entering these systems get a short check value attached, based on the remainder of a polynomial division of their contents. On retrieval, the calculation is repeated and, in the event the check values do not match, corrective action can be taken against data corruption. CRCs can be used for error correction. CRCs are so called because the check (data verification) value is a redundancy (it expands the message without adding information) and the algorithm is based on cyclic codes. CRCs are popular because they are simple to implement in binary hardware, easy to analyze mathematically, and particularly good at detecting common errors caused by noise in transmission channels. Because the check value has a fixed length, the function that generates it is occasionally used as a hash function.
+
+CRCs have the following parameters:
+1. crc_width - the number of bits in the final CRC result.
+2. crc_polynomial - the polynomial being used to generate the CRC, expressed as a bit string.
+3. xor_in - the initial value of the CRC register.
+4. ref_in - Whether to reverse the input bytes before applying the algorithm to them. 
+5. xor_out - a value to be exclusive-ored with the final CRC value.
+6. ref_out - whether to reverse the bits of the CRC before presenting it as the final result. 
+
 ### The algorithm:
 
 ### Edge cases:
