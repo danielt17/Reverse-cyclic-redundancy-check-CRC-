@@ -23,7 +23,7 @@ I will be going over the following topics:
 2. Requirements.
 3. A review of cylic redundancy check codes.
 4. The algorithm.
-5. Failures.
+5. Edge cases.
 
 
 
