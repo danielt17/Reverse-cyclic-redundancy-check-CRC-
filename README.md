@@ -322,6 +322,11 @@ If one adds a third message <img src="https://latex.codecogs.com/png.image?\dpi{
 
 One should notice that both equations modolu the polynomial <img src="https://latex.codecogs.com/png.image?\dpi{110}P"> equal zero, this means that if P irreducible it is the GCD of both homogenoues messages, if it we may find that the resulting GCD will be a lower degree polynomial, therefore one should use a set of about 10 messages of equal length to identify the polynomial. 
 
+<div align="center">
+<img src="https://latex.codecogs.com/png.image?\dpi{110}GCD((m_1&space;\cdot&space;x^N&space;&plus;&space;r_1)&space;&plus;&space;(m_2&space;\cdot&space;x^N&space;&plus;&space;r_2),(m_1&space;\cdot&space;x^N&space;&plus;&space;r_1)&space;&plus;&space;(m_3&space;\cdot&space;x^N&space;&plus;&space;r_3))&space;=&space;P">
+</div>
+
+
 ### Edge cases:
 
 The algorithm in its current state only works under the following constraints:
