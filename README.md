@@ -301,8 +301,9 @@ In order to reverse the CRC polynomial we start by disccusing some proprties of 
 2. One may define a differential message as done by Greg [3], where one can leave out the xor_in and xor_out values. Lets say we have two messages <img src="https://latex.codecogs.com/png.image?\dpi{110}m_1,m_2"> of equal length <img src="https://latex.codecogs.com/png.image?\dpi{110}L">. Therefore we have the following set of equations.
 
 <div align="center">
- <img src="">
- <\div>
+ <img src="https://latex.codecogs.com/png.image?\dpi{110}r_1=&space;(m_1&space;\cdot&space;x^N&space;&plus;&space;I&space;\cdot&space;x^L&space;&plus;&space;F)&space;mod&space;P">
+ https://latex.codecogs.com/png.image?\dpi{110}r_2=&space;(m_2&space;\cdot&space;x^N&space;&plus;&space;I&space;\cdot&space;x^L&space;&plus;&space;F)&space;mod&space;P
+</div>
 
 ### Edge cases:
 
