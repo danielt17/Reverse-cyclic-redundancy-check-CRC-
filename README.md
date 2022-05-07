@@ -308,6 +308,12 @@ In order to reverse the CRC polynomial we start by disccusing some proprties of 
 <img src="https://latex.codecogs.com/png.image?\dpi{110}r_2=&space;(m_2&space;\cdot&space;x^N&space;&plus;&space;I&space;\cdot&space;x^L&space;&plus;&space;F)&space;mod&space;P">
 </div>
 
+Adding the two equations together we get that <img src="https://latex.codecogs.com/png.image?\dpi{110}I,F"> cancel out are we are left with the following homogenous equation.
+
+<div align="center">
+<img src="https://latex.codecogs.com/png.image?\dpi{110}(m_1&space;\cdot&space;x^N&space;&plus;&space;r_1)&space;&plus;&space;(m_2&space;\cdot&space;x^N&space;&plus;&space;r_2)&space;=&space;0&space;mod&space;P">
+</div>
+
 ### Edge cases:
 
 The algorithm in its current state only works under the following constraints:
