@@ -320,6 +320,7 @@ If one adds a third message <img src="https://latex.codecogs.com/png.image?\dpi{
 <img src="https://latex.codecogs.com/png.image?\dpi{110}(m_1&space;\cdot&space;x^N&space;&plus;&space;r_1)&space;&plus;&space;(m_3&space;\cdot&space;x^N&space;&plus;&space;r_3)&space;=&space;0&space;mod&space;P">
 </div>
 
+One should notice that both equations modolu the polynomial <img src="https://latex.codecogs.com/png.image?\dpi{110}P"> equal zero, this means that if P irreducible it is the GCD of both homogenoues messages, if it we may find that the resulting GCD will be a lower degree polynomial, therefore one should use a set of about 10 messages of equal length to identify the polynomial. 
 
 ### Edge cases:
 
