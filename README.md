@@ -358,7 +358,23 @@ Plugging this form of <img src="https://latex.codecogs.com/png.image?\dpi{110}I"
 <img src="https://latex.codecogs.com/png.image?\dpi{110}(m_1&space;\cdot&space;x^N&space;&plus;&space;r_1&space;&plus;&space;m_2&space;\cdot&space;x^N&space;&plus;&space;r_2)&space;mod&space;P&space;=&space;\sum_{k=0}^{N-1}a_k&space;\cdot(x^k&space;\cdot&space;(x^{L_1}&plus;x^{L_2}))&space;mod&space;P">
  </div>
 
-We now have to solve a linear equation over <img src="https://latex.codecogs.com/png.image?\dpi{110}GF(2)"> where we need to find the parameters of <img src="https://latex.codecogs.com/png.image?\dpi{110}I"> which are <img src="https://latex.codecogs.com/png.image?\dpi{110}a_k">. The left side of the equation is the target vector, while the sum over <img src="https://latex.codecogs.com/png.image?\dpi{110}a_k"> describes a matrix.
+We now have to solve a linear equation over <img src="https://latex.codecogs.com/png.image?\dpi{110}GF(2)"> where we need to find the parameters of <img src="https://latex.codecogs.com/png.image?\dpi{110}I"> which are <img src="https://latex.codecogs.com/png.image?\dpi{110}a_k">. The left side of the equation is the target vector, while the sum over <img src="https://latex.codecogs.com/png.image?\dpi{110}a_k"> describes a matrix. Thus we get the value of xor_in.
+
+####  Estimating XorOut:
+
+Solving XorOut is easy by taking a CRC without a XorOut value and xoring it with some packet with the actuaal CRC we want to reverse. The hard part in knowing if we have a ref_in or ref_out CRC, so solving this is done by brute forcing over the 4 options, which isn't hard at all.
+
+<div align="center">
+<img src="https://latex.codecogs.com/png.image?\dpi{110}(m\cdot&space;x^N&plus;&space;I&space;\cdot&space;x^L&space;&plus;&space;F)&space;mod&space;P&space;=&space;r">
+ </div>
+ 
+ <div align="center">
+<img src="https://latex.codecogs.com/png.image?\dpi{110}(m\cdot&space;x^N&plus;&space;I&space;\cdot&space;x^L)&space;mod&space;P&space;=&space;r'">
+ </div>
+ 
+ 
+ 
+ 
 
 ### Edge cases:
 
