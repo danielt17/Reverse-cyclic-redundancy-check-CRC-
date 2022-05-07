@@ -358,6 +358,7 @@ Plugging this form of <img src="https://latex.codecogs.com/png.image?\dpi{110}I"
 <img src="https://latex.codecogs.com/png.image?\dpi{110}(m_1&space;\cdot&space;x^N&space;&plus;&space;r_1&space;&plus;&space;m_2&space;\cdot&space;x^N&space;&plus;&space;r_2)&space;mod&space;P&space;=&space;\sum_{k=0}^{N-1}a_k&space;\cdot(x^k&space;\cdot&space;(x^{L_1}&plus;x^{L_2}))&space;mod&space;P">
  </div>
 
+We now have to solve a linear equation over <img src="https://latex.codecogs.com/png.image?\dpi{110}GF(2)"> where we need to find the parameters of <img src="https://latex.codecogs.com/png.image?\dpi{110}I"> which are <img src="https://latex.codecogs.com/png.image?\dpi{110}a_k">. The left side of the equation is the target vector, while the sum over <img src="https://latex.codecogs.com/png.image?\dpi{110}a_k"> describes a matrix.
 
 ### Edge cases:
 
