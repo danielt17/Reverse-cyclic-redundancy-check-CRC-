@@ -330,7 +330,7 @@ One should take note that <img src="https://latex.codecogs.com/png.image?\dpi{11
 
 ####  Estimating XorIn:
 
-
+Now that we have the polynomial <img src="https://latex.codecogs.com/png.image?\dpi{110}P"> we may use two messages of unequal length to get rid of the xor_out value <img src="https://latex.codecogs.com/png.image?\dpi{110}F">, while we still have the xor_in value  <img src="https://latex.codecogs.com/png.image?\dpi{110}I">.
 
 ### Edge cases:
 
