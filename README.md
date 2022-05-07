@@ -294,7 +294,11 @@ The algorithm has three main steps to it:
 2. Estimating XorIn.
 3. Estimating XorOut, RefIn and RefOut.
 
+#### Estimating the CRC polynomial:
 
+In order to reverse the CRC polynomial we start by disccusing some proprties of the crc:
+1. The CRC is an affine function <img src="https://latex.codecogs.com/png.image?\dpi{110}CRC(x&space;\oplus&space;y)&space;=&space;CRC(x)&space;\oplus&space;CRC(y)&space;\oplus&space;c"> where c is some constant connected to the xor_in and xor_out values.
+2. One may define a differential message as done by Greg [3], where one can leave out the xor_in and xor_out values. Lets say we have two messages <img src="https://latex.codecogs.com/png.image?\dpi{110}m_1,m_2"> of equal length <img src="https://latex.codecogs.com/png.image?\dpi{110}L">. Therefore we have the following set of equations.
 
 ### Edge cases:
 
