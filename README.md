@@ -314,6 +314,12 @@ Adding the two equations together we get that <img src="https://latex.codecogs.c
 <img src="https://latex.codecogs.com/png.image?\dpi{110}(m_1&space;\cdot&space;x^N&space;&plus;&space;r_1)&space;&plus;&space;(m_2&space;\cdot&space;x^N&space;&plus;&space;r_2)&space;=&space;0&space;mod&space;P">
 </div>
 
+If one adds a third message <img src="https://latex.codecogs.com/png.image?\dpi{110}m_3"> of the same length <img src="https://latex.codecogs.com/png.image?\dpi{110}L">, we get another equation.
+
+<div align="center">
+<img src="https://latex.codecogs.com/png.image?\dpi{110}(m_1&space;\cdot&space;x^N&space;&plus;&space;r_1)&space;&plus;&space;(m_3&space;\cdot&space;x^N&space;&plus;&space;r_3)&space;=&space;0&space;mod&space;P">
+</div>
+
 ### Edge cases:
 
 The algorithm in its current state only works under the following constraints:
