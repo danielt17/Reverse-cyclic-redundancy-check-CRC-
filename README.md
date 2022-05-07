@@ -326,6 +326,11 @@ One should notice that both equations modolu the polynomial <img src="https://la
 <img src="https://latex.codecogs.com/png.image?\dpi{110}GCD((m_1&space;\cdot&space;x^N&space;&plus;&space;r_1)&space;&plus;&space;(m_2&space;\cdot&space;x^N&space;&plus;&space;r_2),(m_1&space;\cdot&space;x^N&space;&plus;&space;r_1)&space;&plus;&space;(m_3&space;\cdot&space;x^N&space;&plus;&space;r_3))&space;=&space;P">
 </div>
 
+One should take note that <img src="https://latex.codecogs.com/png.image?\dpi{110}m&space;\cdot&space;x^N&space;&plus;&space;r"> is exactly a conctanation of the data part of the packet with the crc of the data after it.
+
+####  Estimating XorIn:
+
+
 
 ### Edge cases:
 
