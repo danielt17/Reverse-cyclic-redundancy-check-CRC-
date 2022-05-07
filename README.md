@@ -283,7 +283,7 @@ Where the parameters are defined in the following way:
 4. r (remainder) is the crc value.
 5. I (Init) - xor_in the initial value of the CRC register.
 6. F (Final) - xor_out the mask applied at the output of the crc.
-7. P (Polynomial) - is the taps (polynomial coefficents with the highest degree) + x^N.
+7. P (Polynomial) - is the taps (polynomial coefficents with the highest degree) + <img src="https://latex.codecogs.com/png.image?\dpi{110}x^N">.
 
 The operation <img src="https://latex.codecogs.com/png.image?\dpi{110}x^L"> acts as a left shift operator of L bits.
 
