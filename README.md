@@ -340,6 +340,12 @@ Now that we have the polynomial <img src="https://latex.codecogs.com/png.image?\
 <img src="https://latex.codecogs.com/png.image?\dpi{110}(m_2&space;\cdot&space;x^N&space;&plus;&space;I&space;\cdot&space;x^{L_2}&space;&plus;&space;F)&space;mod&space;P&space;=&space;r_2">
 </div>
 
+Adding the two together we get:
+
+<div align="center">
+<img src="https://latex.codecogs.com/png.image?\dpi{110}(m_1&space;\cdot&space;x^N&space;&plus;&space;r_1&space;&plus;&space;m_2&space;\cdot&space;x^N&space;&plus;&space;r_2)&space;mod&space;P&space;=&space;I&space;\cdot&space;(x^{L_1}&space;&plus;&space;x^{L_2})&space;mod&space;P">
+</div>
+
 
 
 ### Edge cases:
