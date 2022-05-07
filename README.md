@@ -333,11 +333,11 @@ One should take note that <img src="https://latex.codecogs.com/png.image?\dpi{11
 Now that we have the polynomial <img src="https://latex.codecogs.com/png.image?\dpi{110}P"> we may use two messages of unequal length to get rid of the xor_out value <img src="https://latex.codecogs.com/png.image?\dpi{110}F">, while we still have the xor_in value  <img src="https://latex.codecogs.com/png.image?\dpi{110}I">.
 
 <div align="center">
-<img src="https://latex.codecogs.com/png.image?\dpi{110}m_1&space;\cdot&space;x^N&space;&plus;&space;I&space;\cdot&space;x^{L_1}&space;&plus;&space;F&space;=&space;r_1&space;mod&space;P&space;">
+<img src="https://latex.codecogs.com/png.image?\dpi{110}(m_1&space;\cdot&space;x^N&space;&plus;&space;I&space;\cdot&space;x^{L_1}&space;&plus;&space;F)&space;mod&space;P&space;=&space;r_1">
 </div>
 
 <div align="center">
-<img src="https://latex.codecogs.com/png.image?\dpi{110}m_2&space;\cdot&space;x^N&space;&plus;&space;I&space;\cdot&space;x^{L_2}&space;&plus;&space;F&space;=&space;r_2&space;mod&space;P&space;">
+<img src="https://latex.codecogs.com/png.image?\dpi{110}(m_2&space;\cdot&space;x^N&space;&plus;&space;I&space;\cdot&space;x^{L_2}&space;&plus;&space;F)&space;mod&space;P&space;=&space;r_2">
 </div>
 
 
