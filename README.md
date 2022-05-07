@@ -372,7 +372,13 @@ Solving XorOut is easy by taking a CRC without a XorOut value and xoring it with
 <img src="https://latex.codecogs.com/png.image?\dpi{110}(m\cdot&space;x^N&plus;&space;I&space;\cdot&space;x^L)&space;mod&space;P&space;=&space;r'">
  </div>
  
+ Adding the two together we get that:
  
+ <div align="center">
+<img src="https://latex.codecogs.com/png.image?\dpi{110}F&space;=&space;(r&space;&plus;&space;r')&space;mod&space;P">
+ </div>
+ 
+ we get XorOut.
  
  
 
@@ -384,6 +390,8 @@ The algorithm in its current state only works under the following constraints:
 2. XorIn and XorOut are either both true or false, this is a reasonable assumption as all crc codes I managed to find online are of this type. 
 
 ## Successful CRCs reversed:
+
+#### The CRCs written here are the ones which work for my precomputed packets, the fact they dont work for my example mode, doesn't mean the algorithm can't reverse them. It can just use different packets.
 
 
 |        CRC name        | Reverse success |
@@ -426,7 +434,6 @@ The algorithm in its current state only works under the following constraints:
 |       CRC64 - ms       |     **Yes**     |
 |       CRC64 - we       |     **Yes**     |
 |       CRC64 - xz       |     **Yes**     |
- 
 
 ## References
 
