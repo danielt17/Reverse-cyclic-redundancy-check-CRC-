@@ -285,7 +285,7 @@ Where the parameters are defined in the following way:
 6. F (Final) - xor_out the mask applied at the output of the crc.
 7. P (Polynomial) - is the taps (polynomial coefficents with the highest degree) + x^N.
 
-The operation https://latex.codecogs.com/png.image?\dpi{110}x^L acts as a left shift operator of L bits.
+The operation <img src="https://latex.codecogs.com/png.image?\dpi{110}x^L"> acts as a left shift operator of L bits.
 
 ### The algorithm:
 
