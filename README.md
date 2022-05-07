@@ -302,7 +302,9 @@ In order to reverse the CRC polynomial we start by disccusing some proprties of 
 
 <div align="center">
  <img src="https://latex.codecogs.com/png.image?\dpi{110}r_1=&space;(m_1&space;\cdot&space;x^N&space;&plus;&space;I&space;\cdot&space;x^L&space;&plus;&space;F)&space;mod&space;P">
- 
+</div>
+
+<div align="center">
 <img src="https://latex.codecogs.com/png.image?\dpi{110}r_2=&space;(m_2&space;\cdot&space;x^N&space;&plus;&space;I&space;\cdot&space;x^L&space;&plus;&space;F)&space;mod&space;P">
 </div>
 
