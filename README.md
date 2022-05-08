@@ -1,6 +1,6 @@
 # Reverse Cyclic Redundancy Check (CRC) codes.
 
-CRC reverse engneering is a public tool to reverse engineer a CRC code parameters. The tool should be usefull for reverse engneering unknown communication protcols usually in link layer (frames), especially for RF systems. In the figure below one can easily notice the existence of a CRC field. In case one does not know the CRC generator parameters, given some combinations of packet and CRC's one can recover the CRC generator parameters. This could be useful in case one wants to forge messages to look like valid messages.
+CRC reverse engneering is a public tool to reverse engineer a CRC code parameters. The tool should be usefull for reverse engneering unknown communication protcols usually in link layer (frames), especially for RF systems. In the figure below one can easily notice the existence of a CRC field. In case one does not know the CRC generator parameters, given some combinations of packet and CRC's, one can recover the CRC generator parameters. This could be useful in case one wants to forge messages to look like valid messages.
 
 
 <div align="center">
@@ -12,7 +12,7 @@ CRC reverse engneering is a public tool to reverse engineer a CRC code parameter
 
 ## Agenda:
 
-This program was written in order to migrate CRC-REVENG to python, as being written in C makes it a lot harder to understand and to extended.
+This program was written in order to migrate CRC-REVENG [6] to python, as being written in C makes it a lot harder to understand and to extended.
 
 
 ## README structure:
@@ -29,7 +29,7 @@ I will be going over the following topics:
 
 This code has two modes of operation: 
 1. Example mode where the user chooses a CRC from a list to reverse as an example.
-2. User mode where the user enters his own packets (data+crc) to reverse the CRC for. 
+2. User mode in which the user enters packets (data+crc) to reverse the CRC. 
 
 Starting the program we are given the following options:
 
@@ -49,7 +49,7 @@ To enter example mode press 1, for user mode press 2.
 
 #### Example mode:
 
-Lets say we choose example mode by entering 1. we are now asked to choose out of a list of CRCs a CRC to reverse, the packets will be pregenerated.
+Lets say we choose the example mode by entering 1. We are now asked to choose out of a list of CRCs a CRC to reverse, the packets will be pregenerated.
 
 ```
 You choose: example mode.
@@ -98,7 +98,7 @@ Packet 14: aaaa9a7d00011b6078e26e64c86400050a1596c60f
 ```
 
 
-Reversing result:
+Reversing results:
 
 ```
 -----------------------------------------------
@@ -118,7 +118,7 @@ xor_out:     0xffffffff
 
 #### User mode:
 
-Lets say we choose user mode by entering 2. We are now asked to enter the polynomial degree, the algorithm assumes we know the degree of the CRC. In this example i choose to enter a polynomial degree of 40.
+Lets say we choose user mode by entering 2. We are now asked to enter the polynomial degree. The algorithm assumes we know the degree of the CRC. In this example we choose to enter a polynomial degree of 40.
 
 ```
 You choose: user mode.
@@ -126,13 +126,13 @@ You choose: user mode.
 Please write the CRC polynomial degree, a number between 8-128 including the limits:
 ```
 
-The next parameter we are asked to input is the number of packets we are going to input into the algorithm, lets say 12.
+The next parameter we are asked to enter is the number of packets we are going to use in the algorithm, lets say 12.
 
 ```
 Please enter the number of packets you want to enter, while the minimum number of packets is: 6 and the maximum is: 100 including the limits.
 ```
 
-Afterwards we will be asked if the data we eneter is in binary or in hex the program can handle both, one just has to specify this here in advance.
+Afterwards we will be asked if the data we eneter is in binary or hex format. The program can handle both, one just has to specify this here in advance.
 
 ```
 Before entering your data please choose the representation you want to use: binary or hex. To choose binary write binary, to choose hexadecimal write hex.
@@ -148,7 +148,7 @@ Enter packets of equal length, optimal packets should have only one field changi
 Enter you packet in hexadecimal:
 ```
 
-After inputting all of the packets, of equal and unequal length as requested by the program we will get the following:
+After entering all of the packets, of equal and unequal length as requested by the program we will get the following message:
 
 ```
 When enetering packets start with the data, and than concatenate the crc.
@@ -273,8 +273,8 @@ A CRC calculation example:
 ```
 
 Some important theortical basics are also needed:
-1. In a more formal manner one may say that we are doing calculation in polynomials over <img src="https://render.githubusercontent.com/render/math?math=GF(2)">, where the polynomial coefficents are binary.
-2. one may formalize the CRC calculation in the following manner: <img src="https://latex.codecogs.com/svg.image?r&space;=&space;(&space;mx^n&plus;Ix^L&plus;F&space;)&space;mod&space;P">
+1. In a more formal manner one may say that we are doing calculations in polynomials over <img src="https://render.githubusercontent.com/render/math?math=GF(2)">, where the polynomial coefficents are binary.
+2. One may formalize the CRC calculation in the following manner: <img src="https://latex.codecogs.com/svg.image?r&space;=&space;(&space;mx^n&plus;Ix^L&plus;F&space;)&space;mod&space;P">
   
 Where the parameters are defined in the following way:
 1. L (length) - is the message length in bits.
@@ -330,7 +330,7 @@ One should take note that <img src="https://latex.codecogs.com/png.image?\dpi{11
 
 ####  Estimating XorIn:
 
-Now that we have the polynomial <img src="https://latex.codecogs.com/png.image?\dpi{110}P"> we may use two messages of unequal length to get rid of the xor_out value <img src="https://latex.codecogs.com/png.image?\dpi{110}F">, while we still have the xor_in value  <img src="https://latex.codecogs.com/png.image?\dpi{110}I">.
+Since we have a polynomial <img src="https://latex.codecogs.com/png.image?\dpi{110}P"> we may, use two messages of unequal length to get rid of the xor_out value <img src="https://latex.codecogs.com/png.image?\dpi{110}F">, while we still have the xor_in value  <img src="https://latex.codecogs.com/png.image?\dpi{110}I">:
 
 <div align="center">
 <img src="https://latex.codecogs.com/png.image?\dpi{110}(m_1&space;\cdot&space;x^N&space;&plus;&space;I&space;\cdot&space;x^{L_1}&space;&plus;&space;F)&space;mod&space;P&space;=&space;r_1">
@@ -362,7 +362,7 @@ We now have to solve a linear equation over <img src="https://latex.codecogs.com
 
 ####  Estimating XorOut:
 
-Solving XorOut is easy by taking a CRC without a XorOut value and xoring it with some packet with the actuaal CRC we want to reverse. The hard part in knowing if we have a ref_in or ref_out CRC, so solving this is done by brute forcing over the 4 options, which isn't hard at all.
+Solving XorOut is performed by taking a CRC without a XorOut value and xoring it with some packet with the actual CRC we want to reverse. The hard part is knowing if we have a ref_in or ref_out CRC, so solving this is done by brute forcing over the 4 options.
 
 <div align="center">
 <img src="https://latex.codecogs.com/png.image?\dpi{110}(m\cdot&space;x^N&plus;&space;I&space;\cdot&space;x^L&space;&plus;&space;F)&space;mod&space;P&space;=&space;r">
@@ -386,8 +386,8 @@ Solving XorOut is easy by taking a CRC without a XorOut value and xoring it with
 
 The algorithm in its current state only works under the following constraints:
 
-1. The crc polynomial degree is multiple of four.
-2. XorIn and XorOut are either both true or false, this is a reasonable assumption as all crc codes I managed to find online are of this type. 
+1. The crc polynomial degree is a multiple of four.
+2. XorIn and XorOut are either both true or false. This is a reasonable assumption as all crc codes I managed to find online are of this type. 
 
 ## Successful CRCs reversed:
 
@@ -442,3 +442,4 @@ The algorithm in its current state only works under the following constraints:
 3. Gregory Ewing, "Reverse-Engineering a CRC Algorithm", https://www.csse.canterbury.ac.nz/greg.ewing/essays/CRC-Reverse-Engineering.html , March 2010.
 4. dramforever, "Magic tricks with CRC", https://dram.page/p/crc-tricks/, December 2021.
 5. 8051Enthusiast, "delsum", https://github.com/8051Enthusiast/delsum/blob/main/algorithms.md, Januray 2022.
+6. Greg Cook, "CRC RevEng", https://reveng.sourceforge.io/, May 2022.
