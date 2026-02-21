@@ -6,6 +6,8 @@ from io import StringIO
 from typing import Sequence
 
 from .crc_reversing import crc_reversing, run_reversal_pipeline
+from .errors import InputValidationError, ReversalFailureError
+from .models import PacketSample, ReverseConfig, ReverseRequest
 
 
 @dataclass(frozen=True)
@@ -24,6 +26,7 @@ Combination = Sequence[int | bool]
 
 
 def _convert_combinations(combinations: Sequence[Combination]) -> list[CrcReverseResult]:
+    """Convert raw internal candidate tuples into typed public result objects."""
     results: list[CrcReverseResult] = []
     for combination in combinations:
         if len(combination) != 6:
@@ -47,27 +50,38 @@ def reverse_crc_from_packets(
     """
     Reverse CRC parameters from packets where each packet is data+crc.
     """
-    if crc_width <= 0:
-        raise ValueError("crc_width must be a positive integer")
+    config = ReverseConfig(crc_width=crc_width, verbose=verbose)
     normalized_packets = [bytes(packet) for packet in packets]
+    if not normalized_packets:
+        raise InputValidationError("at least one packet is required")
     if verbose:
         combinations = run_reversal_pipeline(
-            normalized_packets, crc_width, print_results=True
+            normalized_packets, config.crc_width, print_results=True
         )
     else:
         with redirect_stdout(StringIO()):
             combinations = run_reversal_pipeline(
-                normalized_packets, crc_width, print_results=False
+                normalized_packets, config.crc_width, print_results=False
             )
-    return _convert_combinations(combinations)
+    results = _convert_combinations(combinations)
+    if not results:
+        raise ReversalFailureError("CRC reversal produced no candidate combinations")
+    return results
 
 
 def reverse_crc_from_hex_packets(
     hex_packets: Sequence[str], crc_width: int, verbose: bool = False
 ) -> list[CrcReverseResult]:
     """Reverse CRC parameters from hexadecimal packet strings."""
-    packets = [bytes.fromhex(packet) for packet in hex_packets]
-    return reverse_crc_from_packets(packets, crc_width, verbose=verbose)
+    request = ReverseRequest.from_hex_packets(
+        packets_hex=hex_packets,
+        crc_width=crc_width,
+        verbose=verbose,
+    )
+    packets = [sample.as_bytes for sample in request.packets]
+    return reverse_crc_from_packets(
+        packets, request.config.crc_width, verbose=request.config.verbose
+    )
 
 
 def reverse_crc_interactive() -> list[CrcReverseResult]:

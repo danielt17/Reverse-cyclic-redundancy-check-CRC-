@@ -129,11 +129,13 @@ T = TypeVar("T")
 
 @overload
 def unique(ls: Iterable[THash], version: Literal[0] = 0) -> Tuple[List[THash], List[int]]:
+    """Return unique hashable values and their counts."""
     ...
 
 
 @overload
 def unique(ls: Iterable[T], version: Literal[1]) -> List[T]:
+    """Return ordered unique values while preserving first appearance."""
     ...
 
 

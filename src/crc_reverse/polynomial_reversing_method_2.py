@@ -9,6 +9,7 @@ Created on Fri May  6 21:41:20 2022
 
 from .utils import swap,bytearray_to_int,int_to_bytearray,byte_xor,remove_zeros_from_binary_string
 from .polynomial_utils import ranking_estimated_polynomial
+from .performance import poly_gcd_fast, poly_mod_fast
 from math import ceil
 from typing import Any
 
@@ -28,9 +29,7 @@ def poly_mod(a: int, b: int) -> int:
     Outputs:
         a - int - modulo of the of one polynomial with respect to the other in GF(2).
     '''
-    while a.bit_length() >= b.bit_length():
-        a ^= b << (a.bit_length() - b.bit_length())
-    return a
+    return int(poly_mod_fast(a, b))
 
 def poly_gcd(a: int, b: int) -> int:
     '''
@@ -42,11 +41,9 @@ def poly_gcd(a: int, b: int) -> int:
     Outputs:
         a - int - the polynomial GCD over GF(2).
     '''
-    if b>a:
-        a,b = swap(a,b)
-    while b != 0:
-        a, b = b, poly_mod(a, b)
-    return a
+    if b > a:
+        a, b = swap(a, b)
+    return int(poly_gcd_fast(a, b))
 
 def packet_transform_to_message_big_endian_crc_little_endian_concatenate_turn_to_int_big_endian(packet: PacketPair) -> int:
     '''

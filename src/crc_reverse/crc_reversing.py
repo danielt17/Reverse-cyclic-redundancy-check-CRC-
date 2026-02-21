@@ -53,6 +53,7 @@ def run_reversal_pipeline(packets: list[bytes], crc_width: int, print_results: b
 
 
 def crc_reversing() -> list[Combination]:
+    """Run legacy interactive flow and return candidate combinations."""
     logger = logger_object()
     packets,crc_width = start_program(logger)
     return run_reversal_pipeline(packets, crc_width, print_results=True)

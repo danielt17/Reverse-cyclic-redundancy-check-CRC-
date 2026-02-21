@@ -1,0 +1,28 @@
+{
+  "name": "crc40-user-mode-sample",
+  "crc_width": 40,
+  "packets_hex": [
+    "aaaa9a7d00011b6078e22800050a3dd91ac80b",
+    "aaaa9a7d00011b6078e23c00050a7869ca436a",
+    "aaaa9a7d00011b6078e23200050a9b97f38496",
+    "aaaa9a7d00011b6078e24600050ac55da33901",
+    "aaaa9a7d00011b6078e25000050aa07f7bf344",
+    "aaaa9a7d00011b6078e25a00050a02a552b6f0",
+    "aaaa9a7d00011b6078e29600050af73c635dc4",
+    "aaaa9a7d00011b6078e27800050a2b1edae586",
+    "aaaa9a7d00011b6078e26400050aece62b6a77",
+    "aaaa9a7d00011b6078e26e6400050ad521480584",
+    "aaaa9a7d00011b6078e26e64c800050a24a8659b05",
+    "aaaa9a7d00011b6078e26e64c86400050a40db28c0be"
+  ],
+  "expected_candidates": [
+    {
+      "poly": 75628553,
+      "width": 40,
+      "seed": 0,
+      "ref_in": false,
+      "ref_out": false,
+      "xor_out": 1099511627775
+    }
+  ]
+}

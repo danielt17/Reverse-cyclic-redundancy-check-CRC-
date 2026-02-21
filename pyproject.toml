@@ -36,10 +36,19 @@ Changelog = "https://github.com/danielt17/Reverse-cyclic-redundancy-check-CRC-/b
 [project.optional-dependencies]
 dev = [
   "pytest>=8.0",
+  "hypothesis>=6.100.0",
+  "pytest-benchmark>=4.0.0",
+  "pyright>=1.1.0",
+  "ruff>=0.6.0",
+  "black>=24.8.0",
+  "pre-commit>=3.8.0",
+]
+perf = [
+  "numba>=0.59.0",
 ]
 
 [project.scripts]
-crc-reverse = "crc_reverse.api:main"
+crc-reverse = "crc_reverse.cli:main"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
@@ -50,6 +59,20 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
+markers = [
+  "benchmark: performance benchmark tests",
+]
 filterwarnings = [
   "ignore:Passing separate parameters for poly, width and seed is deprecated.*:DeprecationWarning:crcengine.calc",
 ]
+
+[tool.black]
+line-length = 88
+target-version = ["py39"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]

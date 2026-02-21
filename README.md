@@ -20,8 +20,10 @@ CRC reverse engineering is a tool for recovering CRC parameters from captured pa
 
 - Python package layout (`src/crc_reverse`) with CLI + programmatic API.
 - Legacy interactive workflow preserved (`python example_usage.py`).
+- Interactive and non-interactive CLI modes (`--crc-width`, `--packets-file`, `--json`).
+- Strict typed input models and custom exception hierarchy for stable integrations.
 - Automated tests (`pytest`), static type checks (`pyright`), and GitHub CI.
-- End-to-end validation test included for the 40-bit CRC sample dataset.
+- Property/fuzz/benchmark tests and golden fixtures included for regression protection.
 
 ## Project Layout
 
@@ -54,6 +56,12 @@ Install for development:
 pip install -e ".[dev]"
 ```
 
+Optional performance extras:
+
+```bash
+pip install -e ".[perf]"
+```
+
 Or runtime dependencies only:
 
 ```bash
@@ -66,16 +74,36 @@ Run interactive mode:
 python -m crc_reverse
 ```
 
+Run non-interactive mode from a packets file:
+
+```bash
+python -m crc_reverse --crc-width 40 --packets-file tests/fixtures/crc40_golden.json --json
+```
+
 Run legacy script:
 
 ```bash
 python example_usage.py
 ```
 
-## Programmatic API (Website Baseline)
+## CLI Modes
+
+- Interactive mode (legacy prompts):
+  - `python -m crc_reverse`
+- Non-interactive mode:
+  - `python -m crc_reverse --crc-width 40 --packets-file packets.json`
+  - `python -m crc_reverse --crc-width 40 --packet-hex <hex1> --packet-hex <hex2>`
+- JSON output for automation:
+  - add `--json`
+
+## Programmatic API
 
 ```python
-from crc_reverse import reverse_crc_from_hex_packets
+from crc_reverse import (
+    reverse_crc_from_hex_packets,
+    InputValidationError,
+    ReversalFailureError,
+)
 
 packets_hex = [
     "aaaa9a7d00011b6078e22800050a3dd91ac80b",
@@ -95,6 +123,40 @@ Each result is a `CrcReverseResult` with:
 - `ref_out`
 - `xor_out`
 
+Typed models are available for stricter integrations:
+- `PacketSample`
+- `ReverseConfig`
+- `ReverseRequest`
+
+Custom exceptions:
+- `InputValidationError`
+- `PacketFormatError`
+- `ReversalFailureError`
+
+## Performance Path (Optional)
+
+The default path is pure Python + NumPy. Optional acceleration is available for GF(2) arithmetic via Numba.
+
+Enable:
+
+```bash
+CRC_REVERSE_USE_NUMBA=1 python -m crc_reverse --crc-width 40 --packets-file packets.json
+```
+
+## Testing Strategy
+
+- Unit tests: deterministic behavior for math and API helpers.
+- Property tests (Hypothesis): invariants for `poly_mod` and `poly_gcd`.
+- Input fuzz tests: malformed packet/hex handling.
+- Golden fixtures: known CRC sample dataset in `tests/fixtures/`.
+- Benchmarks: `tests/benchmarks/test_benchmark_reversal.py`.
+
+Run benchmarks:
+
+```bash
+python -m pytest tests/benchmarks -m benchmark
+```
+
 ## Validation
 
 Run all checks:
@@ -109,6 +171,20 @@ Run structure validation only:
 ```bash
 python -m pytest tests/test_project_structure.py
 ```
+
+## Developer Tooling
+
+- Pre-commit hooks: `.pre-commit-config.yaml`
+- Release automation:
+  - `.github/workflows/release-please.yml`
+  - `.github/workflows/release.yml`
+- Architecture and extension docs:
+  - `docs/ARCHITECTURE.md`
+  - `docs/ALGORITHM_FLOW.md`
+  - `docs/ADDING_METHOD.md`
+- Container/dev environment:
+  - `Dockerfile`
+  - `.devcontainer/devcontainer.json`
 
 ## Legacy Full Write-up (Preserved)
 
