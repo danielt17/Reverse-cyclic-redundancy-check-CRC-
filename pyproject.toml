@@ -1,0 +1,78 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crc-reverse-engineering"
+version = "0.1.0"
+description = "Reverse engineer CRC parameters from captured packets."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [{ name = "DanielT17" }]
+keywords = ["crc", "reverse-engineering", "protocol-analysis", "cryptography", "rf"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Topic :: Security",
+  "Topic :: Scientific/Engineering",
+]
+dependencies = [
+  "numpy>=1.18.1",
+  "crcengine>=0.3.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/danielt17/Reverse-cyclic-redundancy-check-CRC-"
+Issues = "https://github.com/danielt17/Reverse-cyclic-redundancy-check-CRC-/issues"
+Changelog = "https://github.com/danielt17/Reverse-cyclic-redundancy-check-CRC-/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "hypothesis>=6.100.0",
+  "pytest-benchmark>=4.0.0",
+  "pyright>=1.1.0",
+  "ruff>=0.6.0",
+  "black>=24.8.0",
+  "pre-commit>=3.8.0",
+]
+perf = [
+  "numba>=0.59.0",
+]
+
+[project.scripts]
+crc-reverse = "crc_reverse.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = [
+  "benchmark: performance benchmark tests",
+]
+filterwarnings = [
+  "ignore:Passing separate parameters for poly, width and seed is deprecated.*:DeprecationWarning:crcengine.calc",
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py39"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]

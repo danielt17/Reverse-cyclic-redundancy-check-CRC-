@@ -1,7 +1,195 @@
-# Reverse Cyclic Redundancy Check (CRC) codes.
+# Reverse Cyclic Redundancy Check (CRC) Codes
 
-CRC reverse engneering is a public tool to reverse engineer a CRC code parameters. The tool should be usefull for reverse engneering unknown communication protcols usually in link layer (frames), especially for RF systems. In the figure below one can easily notice the existence of a CRC field. In case one does not know the CRC generator parameters, given some combinations of packet and CRC's, one can recover the CRC generator parameters. This could be useful in case one wants to forge messages to look like valid messages.
+CRC reverse engineering is a tool for recovering CRC parameters from captured packets (`data + crc`). It is useful when analyzing unknown communication protocols (especially link-layer/RF traffic) and reproducing valid packets for protocol research.
 
+## Project Health
+
+[![CI](https://github.com/danielt17/Reverse-cyclic-redundancy-check-CRC-/actions/workflows/ci.yml/badge.svg)](https://github.com/danielt17/Reverse-cyclic-redundancy-check-CRC-/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/danielt17/Reverse-cyclic-redundancy-check-CRC-/actions/workflows/codeql.yml/badge.svg)](https://github.com/danielt17/Reverse-cyclic-redundancy-check-CRC-/actions/workflows/codeql.yml)
+
+- Contributing: `CONTRIBUTING.md`
+- Code of Conduct: `CODE_OF_CONDUCT.md`
+- Security: `SECURITY.md`
+- Support: `SUPPORT.md`
+- Changelog: `CHANGELOG.md`
+- Citation: `CITATION.cff`
+- Dependency updates: `.github/dependabot.yml`
+- Code ownership: `.github/CODEOWNERS`
+
+## At A Glance
+
+- Python package layout (`src/crc_reverse`) with CLI + programmatic API.
+- Legacy interactive workflow preserved (`python example_usage.py`).
+- Interactive and non-interactive CLI modes (`--crc-width`, `--packets-file`, `--json`).
+- Strict typed input models and custom exception hierarchy for stable integrations.
+- Automated tests (`pytest`), static type checks (`pyright`), and GitHub CI.
+- Property/fuzz/benchmark tests and golden fixtures included for regression protection.
+- Important limitation: not all CRC variants can be reverse-engineered from available packet samples.
+
+## Project Layout
+
+```text
+.
+|- src/crc_reverse/                 # Core package
+|- tests/                           # Unit + integration tests
+|- .github/workflows/ci.yml         # Test automation
+|- .github/workflows/codeql.yml     # Security scanning
+|- pyproject.toml                   # Package metadata/config
+|- requirements.txt                 # Runtime dependencies
+|- example_usage.py                 # Legacy interactive entrypoint
+|- crc_reversing.py                 # Compatibility entrypoint
+|- output_example.txt               # Full sample output
+|- CONTRIBUTING.md
+|- SECURITY.md
+`- CHANGELOG.md
+```
+
+## Quick Start
+
+Current maintained environment:
+- Python `>=3.9`
+- `numpy>=1.18.1`
+- `crcengine>=0.3.2`
+
+Install for development:
+
+```bash
+pip install -e ".[dev]"
+```
+
+Optional performance extras:
+
+```bash
+pip install -e ".[perf]"
+```
+
+Or runtime dependencies only:
+
+```bash
+pip install -r requirements.txt
+```
+
+Run interactive mode:
+
+```bash
+python -m crc_reverse
+```
+
+Run non-interactive mode from a packets file:
+
+```bash
+python -m crc_reverse --crc-width 40 --packets-file .\tests\fixtures\crc40_golden.json --json
+```
+
+Run legacy script:
+
+```bash
+python example_usage.py
+```
+
+## CLI Modes
+
+- Interactive mode (legacy prompts):
+  - `python -m crc_reverse`
+- Non-interactive mode:
+  - `python -m crc_reverse --crc-width 40 --packets-file packets.json`
+  - `python -m crc_reverse --crc-width 40 --packet-hex <hex1> --packet-hex <hex2>`
+- JSON output for automation:
+  - add `--json`
+
+## Programmatic API
+
+```python
+from crc_reverse import (
+    reverse_crc_from_hex_packets,
+    InputValidationError,
+    ReversalFailureError,
+)
+
+packets_hex = [
+    "aaaa9a7d00011b6078e22800050a3dd91ac80b",
+    # ...
+]
+
+results = reverse_crc_from_hex_packets(packets_hex, crc_width=40, verbose=False)
+for candidate in results:
+    print(candidate.poly, candidate.seed, candidate.xor_out)
+```
+
+Each result is a `CrcReverseResult` with:
+- `poly`
+- `width`
+- `seed`
+- `ref_in`
+- `ref_out`
+- `xor_out`
+
+Typed models are available for stricter integrations:
+- `PacketSample`
+- `ReverseConfig`
+- `ReverseRequest`
+
+Custom exceptions:
+- `InputValidationError`
+- `PacketFormatError`
+- `ReversalFailureError`
+
+## Performance Path (Optional)
+
+The default path is pure Python + NumPy. Optional acceleration is available for GF(2) arithmetic via Numba.
+
+Enable:
+
+```bash
+CRC_REVERSE_USE_NUMBA=1 python -m crc_reverse --crc-width 40 --packets-file packets.json
+```
+
+## Testing Strategy
+
+- Unit tests: deterministic behavior for math and API helpers.
+- Property tests (Hypothesis): invariants for `poly_mod` and `poly_gcd`.
+- Input fuzz tests: malformed packet/hex handling.
+- Golden fixtures: known CRC sample dataset in `tests/fixtures/`.
+- Benchmarks: `tests/benchmarks/test_benchmark_reversal.py`.
+
+Run benchmarks:
+
+```bash
+python -m pytest tests/benchmarks -m benchmark
+```
+
+## Validation
+
+Run all checks:
+
+```bash
+python -m pyright
+python -m pytest
+```
+
+Run structure validation only:
+
+```bash
+python -m pytest tests/test_project_structure.py
+```
+
+## Developer Tooling
+
+- Pre-commit hooks: `.pre-commit-config.yaml`
+- Release automation:
+  - `.github/workflows/release-please.yml`
+  - `.github/workflows/release.yml`
+- Architecture and extension docs:
+  - `docs/ARCHITECTURE.md`
+  - `docs/ALGORITHM_FLOW.md`
+  - `docs/ADDING_METHOD.md`
+- Container/dev environment:
+  - `Dockerfile`
+  - `.devcontainer/devcontainer.json`
+
+## Legacy Full Write-up (Preserved)
+
+The original long-form explanation and derivations are kept below for full historical/technical context.
 
 <div align="center">
 
@@ -209,6 +397,9 @@ xor_out:     0xffffffffff
 #### A Full output can be seen [here](https://github.com/danielt17/Reverse-cyclic-redundancy-check-CRC-/blob/main/output_example.txt)
 
 ### Requirements:
+
+Historical note: the requirement list below is preserved from the original write-up.
+For the maintained package baseline, use the versions listed in the **Quick Start** section above.
 
 Running this program requires the following dependencies:
 

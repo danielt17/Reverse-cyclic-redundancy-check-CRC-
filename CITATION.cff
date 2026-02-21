@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+title: "Reverse Cyclic Redundancy Check (CRC)"
+message: "If you use this project in research, please cite it using this metadata."
+type: software
+authors:
+  - family-names: "T"
+    given-names: "Daniel"
+repository-code: "https://github.com/danielt17/Reverse-cyclic-redundancy-check-CRC-"
+license: "MIT"
