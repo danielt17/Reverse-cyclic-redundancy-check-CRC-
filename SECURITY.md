@@ -25,4 +25,4 @@ Please include:
 - Impact assessment
 - Suggested remediation, if available
 
-You can expect an initial response within 7 days.
+Reports are reviewed on a best-effort basis; no fixed response timeline is guaranteed.

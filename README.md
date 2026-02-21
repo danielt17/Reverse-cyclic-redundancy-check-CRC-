@@ -24,6 +24,7 @@ CRC reverse engineering is a tool for recovering CRC parameters from captured pa
 - Strict typed input models and custom exception hierarchy for stable integrations.
 - Automated tests (`pytest`), static type checks (`pyright`), and GitHub CI.
 - Property/fuzz/benchmark tests and golden fixtures included for regression protection.
+- Important limitation: not all CRC variants can be reverse-engineered from available packet samples.
 
 ## Project Layout
 
@@ -77,7 +78,7 @@ python -m crc_reverse
 Run non-interactive mode from a packets file:
 
 ```bash
-python -m crc_reverse --crc-width 40 --packets-file tests/fixtures/crc40_golden.json --json
+python -m crc_reverse --crc-width 40 --packets-file .\tests\fixtures\crc40_golden.json --json
 ```
 
 Run legacy script:
