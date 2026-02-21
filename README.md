@@ -47,7 +47,7 @@ CRC reverse engineering is a tool for recovering CRC parameters from captured pa
 ## Quick Start
 
 Current maintained environment:
-- Python `>=3.9`
+- Python `>=3.10`
 - `numpy>=1.18.1`
 - `crcengine>=0.3.2`
 

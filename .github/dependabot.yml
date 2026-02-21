@@ -4,10 +4,23 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
+    rebase-strategy: "disabled"
+    versioning-strategy: "increase-if-necessary"
+    exclude-paths:
+      - "requirements.txt"
+    groups:
+      python-dependencies:
+        patterns:
+          - "*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
+    rebase-strategy: "disabled"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
