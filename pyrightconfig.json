@@ -1,0 +1,16 @@
+{
+  "include": [
+    "src",
+    "tests",
+    "example_usage.py",
+    "crc_reversing.py"
+  ],
+  "executionEnvironments": [
+    {
+      "root": ".",
+      "extraPaths": [
+        "src"
+      ]
+    }
+  ]
+}

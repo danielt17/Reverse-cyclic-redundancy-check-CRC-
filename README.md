@@ -1,7 +1,118 @@
-# Reverse Cyclic Redundancy Check (CRC) codes.
+# Reverse Cyclic Redundancy Check (CRC) Codes
 
-CRC reverse engneering is a public tool to reverse engineer a CRC code parameters. The tool should be usefull for reverse engneering unknown communication protcols usually in link layer (frames), especially for RF systems. In the figure below one can easily notice the existence of a CRC field. In case one does not know the CRC generator parameters, given some combinations of packet and CRC's, one can recover the CRC generator parameters. This could be useful in case one wants to forge messages to look like valid messages.
+CRC reverse engineering is a tool for recovering CRC parameters from captured packets (`data + crc`). It is useful when analyzing unknown communication protocols (especially link-layer/RF traffic) and reproducing valid packets for protocol research.
 
+## Project Health
+
+[![CI](https://github.com/danielt17/Reverse-cyclic-redundancy-check-CRC-/actions/workflows/ci.yml/badge.svg)](https://github.com/danielt17/Reverse-cyclic-redundancy-check-CRC-/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/danielt17/Reverse-cyclic-redundancy-check-CRC-/actions/workflows/codeql.yml/badge.svg)](https://github.com/danielt17/Reverse-cyclic-redundancy-check-CRC-/actions/workflows/codeql.yml)
+
+- Contributing: `CONTRIBUTING.md`
+- Code of Conduct: `CODE_OF_CONDUCT.md`
+- Security: `SECURITY.md`
+- Support: `SUPPORT.md`
+- Changelog: `CHANGELOG.md`
+- Citation: `CITATION.cff`
+- Dependency updates: `.github/dependabot.yml`
+- Code ownership: `.github/CODEOWNERS`
+
+## At A Glance
+
+- Python package layout (`src/crc_reverse`) with CLI + programmatic API.
+- Legacy interactive workflow preserved (`python example_usage.py`).
+- Automated tests (`pytest`), static type checks (`pyright`), and GitHub CI.
+- End-to-end validation test included for the 40-bit CRC sample dataset.
+
+## Project Layout
+
+```text
+.
+|- src/crc_reverse/                 # Core package
+|- tests/                           # Unit + integration tests
+|- .github/workflows/ci.yml         # Test automation
+|- .github/workflows/codeql.yml     # Security scanning
+|- pyproject.toml                   # Package metadata/config
+|- requirements.txt                 # Runtime dependencies
+|- example_usage.py                 # Legacy interactive entrypoint
+|- crc_reversing.py                 # Compatibility entrypoint
+|- output_example.txt               # Full sample output
+|- CONTRIBUTING.md
+|- SECURITY.md
+`- CHANGELOG.md
+```
+
+## Quick Start
+
+Current maintained environment:
+- Python `>=3.9`
+- `numpy>=1.18.1`
+- `crcengine>=0.3.2`
+
+Install for development:
+
+```bash
+pip install -e ".[dev]"
+```
+
+Or runtime dependencies only:
+
+```bash
+pip install -r requirements.txt
+```
+
+Run interactive mode:
+
+```bash
+python -m crc_reverse
+```
+
+Run legacy script:
+
+```bash
+python example_usage.py
+```
+
+## Programmatic API (Website Baseline)
+
+```python
+from crc_reverse import reverse_crc_from_hex_packets
+
+packets_hex = [
+    "aaaa9a7d00011b6078e22800050a3dd91ac80b",
+    # ...
+]
+
+results = reverse_crc_from_hex_packets(packets_hex, crc_width=40, verbose=False)
+for candidate in results:
+    print(candidate.poly, candidate.seed, candidate.xor_out)
+```
+
+Each result is a `CrcReverseResult` with:
+- `poly`
+- `width`
+- `seed`
+- `ref_in`
+- `ref_out`
+- `xor_out`
+
+## Validation
+
+Run all checks:
+
+```bash
+python -m pyright
+python -m pytest
+```
+
+Run structure validation only:
+
+```bash
+python -m pytest tests/test_project_structure.py
+```
+
+## Legacy Full Write-up (Preserved)
+
+The original long-form explanation and derivations are kept below for full historical/technical context.
 
 <div align="center">
 
@@ -209,6 +320,9 @@ xor_out:     0xffffffffff
 #### A Full output can be seen [here](https://github.com/danielt17/Reverse-cyclic-redundancy-check-CRC-/blob/main/output_example.txt)
 
 ### Requirements:
+
+Historical note: the requirement list below is preserved from the original write-up.
+For the maintained package baseline, use the versions listed in the **Quick Start** section above.
 
 Running this program requires the following dependencies:
 
